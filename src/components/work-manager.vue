@@ -61,7 +61,7 @@ export default {
           key: 'description'
         },
         {
-          title: '创建时间从',
+          title: '创建时间',
           key: 'gmtCreate'
         },
         {
