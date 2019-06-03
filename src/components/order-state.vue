@@ -13,7 +13,7 @@
 export default {
   data () {
     return {
-      total: 100, // 共多少条数据
+      total: 0, // 共多少条数据
       current: 1, // 当前是第几页
       pageSize: 10, // 每页多少条
       applyCol: [
@@ -24,81 +24,128 @@ export default {
         },
         {
           title: '预约订单号',
-          key: 'number'
-        },
-        {
-          title: '产品类型',
-          key: 'type'
+          key: 'orderNo'
         },
         {
           title: '产品名称',
-          key: 'name'
+          key: 'productName'
         },
         {
           title: '预约时间',
-          key: 'time'
+          key: 'appointmentDate'
         },
         {
-          title: '客户经理',
-          key: 'jingli'
+          title: '客户经理姓名',
+          key: 'managerName'
         },
         {
-          title: '状态',
-          key: 'action',
+          title: '操作',
+          key: 'status',
           width: 150,
           align: 'center',
           render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.show(params.index)
+            const status = params.row.status
+            if (status === 1) {
+              return h('div', [
+                h('Button', {
+                  props: {
+                    type: 'primary',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.complete({
+                        id: params.row.id,
+                        version: params.row.version
+                      })
+                    }
                   }
-                }
-              }, '已完成')
-            ])
+                }, '去完成')
+              ])
+            } else {
+              return h('div', [
+                h('Button', {
+                  props: {
+                    disabled: 'disabled',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                    }
+                  }
+                }, '已完成')
+              ])
+            }
           }
         }
       ],
-      applyList: [
-        {
-          number: 'AS123',
-          type: '银行理财',
-          name: '理财好产品',
-          time: '2019.5.29',
-          jingli: '杨经理'
-        },
-        {
-          number: 'AS56',
-          type: '银行理财',
-          name: '理财好产品',
-          time: '2019.5.29',
-          jingli: '刘经理'
-        }
-      ]
+      applyList: []
     }
   },
   created () {
+    this.getList({
+      pageNum: 1,
+      pageSize: 10,
+      searchBean: {
+        orderNo: ''
+      }
+    })
   },
   methods: {
-    show (index) {
-      this.$Modal.info({
-        title: 'User Info',
-        content: `Name：${this.applyList[index].name}<br>Age：${this.applyList[index].age}<br>Address：${this.applyList[index].address}`
-      })
-    },
     // 页码改变
     pageChange (val) {
       console.log('第' + val + '页')
-      // this.current = val
-      // this.getDatas('recharge', val, this.pageSize)
+      this.current = val
+      this.getList({
+        pageNum: val,
+        pageSize: 10,
+        searchBean: {
+          orderNo: ''
+        }
+      })
+    },
+    // 去完成
+    complete (params) {
+      this.$axios.post(window.serverIp + '/sys/business/finish', params)
+        .then((res) => {
+          if (res.code === 0) {
+            this.getList({
+              pageNum: this.current,
+              pageSize: 10,
+              searchBean: {
+                orderNo: ''
+              }
+            })
+          } else {
+            this.$Message.warning(res.msg)
+          }
+        })
+        .catch((err) => {
+          this.$Message.warning(err)
+        })
+    },
+    // 获取预约业务列表
+    getList (params) {
+      this.$axios.post(window.serverIp + '/sys/business/list', params)
+        .then((res) => {
+          if (res.code === 0) {
+            var data = res.body
+            console.log(data)
+            this.total = data.total
+            this.applyList = data.list
+          } else {
+            this.$Message.warning(res.msg)
+          }
+        })
+        .catch((err) => {
+          this.$Message.warning(err)
+        })
     }
   },
   // 计算属性

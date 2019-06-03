@@ -15,11 +15,11 @@
           <Row>
             <Col span="6" class="bp cardItem">
               <div class="title">今日营销活跃人数</div>
-              <div>36/65</div>
+              <div>{{todayActiveManagerNum}}/{{managerNum}}</div>
             </Col>
             <Col span="6" offset="1" class="bp cardItem">
-            <div class="title">今日营销活跃人数</div>
-            <div>36/65</div>
+            <div class="title">已加入营销人数</div>
+            <div>{{managerNum}}/{{staffNumLimit}}</div>
             </Col>
           </Row>
         </div>
@@ -35,8 +35,8 @@
           <Icon type="ios-loop-strong"></Icon>
           查看更多 》
         </a>
-          <div class="account"><span class="fb">账号：</span> 123456789</div>
-          <div class="account mt10"><span class="fb">剩余使用天数：</span>20/365天</div>
+          <div class="account"><span class="fb">账号：</span> {{purchaser}}</div>
+          <div class="account mt10"><span class="fb">剩余使用天数：</span>{{remainingPeriod}}/{{duration}}天</div>
       </Card>
       </Col>
     </Row>
@@ -51,11 +51,11 @@
           <Icon type="ios-loop-strong"></Icon>
           查看更多 》
         </a>
-        <Tabs style="width:100%">
-          <TabPane label="7天" icon="md-clock">
+        <Tabs style="width:100%" @on-click="tabClick">
+          <TabPane label="7天" icon="md-clock" name="7">
             <ve-line :data="chartData" style="width:100%;"></ve-line>
           </TabPane>
-          <TabPane label="30天" icon="md-clock">
+          <TabPane label="30天" icon="md-clock" name="30">
             <ve-line :data="chartData"  style="width:100%"></ve-line>
           </TabPane>
         </Tabs>
@@ -68,11 +68,16 @@
           <Icon type="ios-film-outline"></Icon>
           最新动态
         </p>
-        <a href="#" slot="extra" @click.prevent="showModal">
+        <a href="#" slot="extra" @click.prevent="goDynamic">
           <Icon type="ios-loop-strong"></Icon>
           查看更多 》
         </a>
-        <div>123</div>
+        <div v-for="item in list" :key="item.id">
+          <Row>
+            <Col span="14" class="overHide">{{item.title}}</Col>
+            <Col span="10" class="overHide">{{item.gmtCreate}}</Col>
+          </Row>
+        </div>
       </Card>
       </Col>
     </Row>
@@ -83,8 +88,8 @@
       </p>
       <div >
         <p class="f13 fb mt10">账号状态：</p>
-        <p class="items mt10">账号：12354</p>
-        <p class="items mt10">剩余使用天数：12/365</p>
+        <p class="items mt10">账号：{{purchaser}}</p>
+        <p class="items mt10">剩余使用天数：{{remainingPeriod}}/{{duration}}天</p>
         <p class="f12 fb mt10" style="margin-bottom:10px">海豚服务：</p>
         <Row>
           <Col span="6" class="a-card">
@@ -115,6 +120,13 @@
 export default {
   data () {
     return {
+      list: [],
+      managerNum: '',
+      todayActiveManagerNum: '',
+      duration: '',
+      purchaser: '',
+      staffNumLimit: '',
+      remainingPeriod: '',
       modal: false,
       chartData: {
         columns: ['日期', '访问用户量'],
@@ -130,17 +142,69 @@ export default {
     }
   },
   created () {
+    this.getData()
+    this.getChartData('1') // 1:7天 2:30天
   },
   methods: {
+    tabClick (name) {
+      if (name === '7') {
+        this.getChartData('1')
+      } else if (name === '30') {
+        this.getChartData('2')
+      }
+    },
+    getData () {
+      this.$axios.get(window.serverIp + '/sys/home/info')
+        .then((res) => {
+          if (res.code === 0) {
+            var data = res.body
+            console.log(data)
+            this.managerNum = data.managerNum
+            this.todayActiveManagerNum = data.todayActiveManagerNum
+            this.staffNumLimit = data.staffNumLimit
+            this.purchaser = data.purchaser
+            this.duration = data.duration
+            this.remainingPeriod = data.remainingPeriod
+            this.list = data.noticeList
+          } else {
+            this.$Message.warning(res.msg)
+          }
+        })
+        .catch((err) => {
+          this.$Message.warning(err)
+        })
+    },
+    // 图表数据
+    getChartData (day) {
+      this.$axios.get(window.serverIp + '/sys/home/business?type=' + day)
+        .then((res) => {
+          if (res.code === 0) {
+            var data = res.body
+            console.log(data)
+            this.chartData.rows = data
+          } else {
+            this.$Message.warning(res.msg)
+          }
+        })
+        .catch((err) => {
+          this.$Message.warning(err)
+        })
+    },
     goCustomer () {
-      console.log(1)
+      // 更改菜单的值
+      this.$emit("checkMenu", 'customer')
       this.$router.push('customer')
     },
     goOrder () {
+      this.$emit("checkMenu", 'order')
       this.$router.push('order')
     },
     showModal () {
       this.modal = true
+    },
+    goDynamic () {
+      this.$emit("checkMenu", 'dynamic')
+      this.$router.push('dynamic')
     }
   },
   // 计算属性
@@ -207,4 +271,11 @@ export default {
       margin: 25px 0 10px 0;
   .open
     cursor pointer;
+  .overHide
+    height:30px;
+    line-height:30px;
+    overflow: hidden;/*超出部分隐藏*/
+    text-overflow:ellipsis;/* 超出部分显示省略号 */
+    white-space: nowrap;/*规定段落中的文本不进行换行 */
+    cursor:pointer;
 </style>

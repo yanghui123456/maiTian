@@ -9,7 +9,6 @@
             <span class="title"> <span class="fb">全员营销.</span> 管理系统后台</span>
           </div>
           <div class="layout-nav">
-            <span class="level cW">登录账号：{{17600299870}}</span>
             <Icon type="md-power" size="24" class="ml30" @click="signOut"/></Icon>
           </div>
         </Menu>
@@ -47,7 +46,7 @@
         <!--内容-->
         <Layout>
           <Content :style="{width:'100%', height:'100%', padding: '20px', minHeight: '280px', boxSizing:'border-box', background: '#f7f8fc', overflow: 'auto'}">
-            <router-view></router-view>
+            <router-view @checkMenu="getMenu"></router-view>
           </Content>
         </Layout>
       </Layout>
@@ -86,6 +85,10 @@ export default {
     menuSelect (name) {
       this.activeMenu = name
       localStorage.setItem('activeMenu', this.activeMenu)
+    },
+    // 子组件传递过来的值
+    getMenu (res) {
+      this.menuSelect(res)
     },
     // 腿粗哈
     signOut () {
