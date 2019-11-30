@@ -6,7 +6,7 @@
         <Menu mode="horizontal" theme="primary" active-name="1">
           <div class="layout-logo">
             <!--<img src="../../assets/logo.png" alt="logo图标" class="logo">-->
-            <span class="title"> <span class="fb">全员营销.</span> 管理系统后台</span>
+            <span class="title"> <span class="fb">麦田房产</span></span>
           </div>
           <div class="layout-nav">
             <Icon type="md-power" size="24" class="ml30" @click="signOut"/></Icon>
@@ -17,29 +17,55 @@
         <!--左侧菜单-->
         <Sider hide-trigger :style="{background: '#fff'}">
           <Menu :active-name="activeMenu" theme="light" width="auto" @on-select="menuSelect">
-            <MenuItem name="index" to="index">
-              <Icon type="md-home"></Icon>
-              <span>首页</span>
-            </MenuItem>
-            <MenuItem name="customer" to="customer">
-              <Icon type="md-person"></Icon>
-              <span>名片管理</span>
-            </MenuItem>
-            <MenuItem name="organization" to="organization">
-              <Icon type="md-attach"></Icon>
-              <span>组织架构管理</span>
-            </MenuItem>
-            <MenuItem name="work" to="work">
-              <Icon type="md-book"></Icon>
-              <span>产品管理</span>
-            </MenuItem>
-            <MenuItem name="order" to="order">
-              <Icon type="md-brush"></Icon>
-              <span>预约产品状态</span>
-            </MenuItem>
-            <MenuItem name="dynamic" to="dynamic">
+            <MenuItem name="news" to="news" v-if="role === '5' || role === '6'">
               <Icon type="ios-chatboxes"></Icon>
-              <span>动态管理</span>
+              <span>待办事项</span>
+            </MenuItem>
+            <!--经纪人-->
+            <MenuItem name="customerlist" to="customerlist" v-if="role === '7'">
+              <Icon type="ios-people"></Icon>
+              <span>顾客列表</span>
+            </MenuItem>
+            <MenuItem name="datalist" to="datalist" v-if="role !== '7'">
+              <Icon type="ios-stats" />
+              <span>数据报表</span>
+            </MenuItem>
+            <MenuItem name="usermanage" to="usermanage" v-if="role === '1'">
+              <Icon type="ios-person-add"></Icon>
+              <span>用户管理</span>
+            </MenuItem>
+            <MenuItem name="salecontrolmanage" to="salecontrolmanage" v-if="role === '1'">
+              <Icon type="md-reorder" />
+              <span>销控表管理</span>
+            </MenuItem>
+            <MenuItem name="marketcontrol" to="marketcontrol"  v-if="role === '5' || role === '6'">
+              <Icon type="ios-grid" />
+              <span>销控表</span>
+            </MenuItem>
+            <Submenu name="content" v-if="role === '1'">
+              <template slot="title">
+                <Icon type="ios-paper" />
+                内容库管理
+              </template>
+              <MenuItem name="SysTrigger" to="SysTrigger">系统触发</MenuItem>
+              <MenuItem name="restivalseason" to="restivalseason">节日节气</MenuItem>
+              <MenuItem name="realtimepublish" to="realtimepublish">实时发布</MenuItem>
+            </Submenu>
+            <Submenu name="activity" v-if="role === '1' || role === '5' || role === '6'">
+              <template slot="title">
+                <Icon type="ios-chatbubbles" />
+                社区活动管理
+              </template>
+              <MenuItem name="communityactivity" to="communityactivity" v-if="role === '1' || role === '5' || role === '6'">社群活动</MenuItem>
+              <MenuItem name="customergiving" to="customergiving" v-if="role === '1' || role === '6'">客户感恩礼</MenuItem>
+            </Submenu>
+            <MenuItem name="datamaintain" to="datamaintain" v-if="role === '1'">
+              <Icon type="md-build" />
+              <span>基础数据维护</span>
+            </MenuItem>
+            <MenuItem name="agentmanager" to="agentmanager" v-if="role === '6'">
+              <Icon type="ios-person" />
+              <span>经纪人管理</span>
             </MenuItem>
           </Menu>
         </Sider>
@@ -53,14 +79,14 @@
     </Layout>
   </div>
 </template>
-
 <script>
 import store from '@/store'
 export default {
   store,
   data () {
     return {
-      activeMenu: ''
+      activeMenu: '',
+      role: '' // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
     }
   },
   created: function () {
@@ -74,6 +100,10 @@ export default {
       // 刷新时让vuex中的token值与localStorage中的同步,因为刷新时vuex中的数据会丢失
       var token = localStorage.getItem('token')
       store.commit('setToken', token)
+      // 获取角色
+      var roles = localStorage.getItem('role')
+      store.commit('setRole', roles)
+      this.role = roles
     })
   },
   computed: {
@@ -84,7 +114,7 @@ export default {
     // 菜单选择
     menuSelect (name) {
       this.activeMenu = name
-      localStorage.setItem('activeMenu', this.activeMenu)
+      localStorage.setItem('activeMenu', name)
     },
     // 子组件传递过来的值
     getMenu (res) {
@@ -109,7 +139,7 @@ export default {
   }
 }
 </script>
-<style lang="stylus" scoped>
+<style lang="stylus" rel="stylesheet/stylus" scoped>
   .layout
     height:100%;
     border: 1px solid #d7dde4;
@@ -141,6 +171,8 @@ export default {
         line-height 60px;
         color:white;
         position absolute;
+        font-size 26px;
+        width:130px;
     .layout-nav
       text-align right;
   .menu-icon{
@@ -186,4 +218,7 @@ export default {
     background #f8f8f8;
   .ivu-menu-light.ivu-menu-vertical .ivu-menu-item-active:not(.ivu-menu-submenu):after
     left:2px;
+  .ivu-layout-sider-children {
+    overflow auto;
+  }
 </style>

@@ -5,18 +5,18 @@
     <div class="right">
       <div class="loginBox">
         <div class="box">
-          <p class="title">欢迎登陆客户经理+管理后台系统</p>
+          <p class="title">麦田房产</p>
           <div>
             <Input  v-model="account" prefix="ios-phone-portrait" placeholder="请输入账号" class="input"/>
           </div>
           <div>
             <Input v-model="password" prefix="md-lock" placeholder="请输入密码" class="input" type="password"/>
           </div>
-          <Button type="primary" class="logBtn" :loading="loading" @click="login">登陆</Button>
+          <Button type="primary" class="logBtn" :loading="loading" @click="login">{{text}}</Button>
+          <p class="forget mt20" @click="forget">忘记密码？</p>
         </div>
       </div>
     </div>
-    <!--<p class="text">京ICP备  xxxx号 Copyright 2016-2017 旭金科技有限公司</p>-->
   </div>
 </template>
 <script>
@@ -26,8 +26,9 @@ export default {
   data () {
     return {
       loading: false,
-      account: 'zhangsan', // 账号
-      password: '432423' // 密码
+      text: '登录',
+      account: '', // 账号
+      password: '' // 密码
     }
   },
   created () {
@@ -41,37 +42,63 @@ export default {
   },
   methods: {
     login () {
-      if (this.account === '') {
-        this.$Message.warning('请输入账号')
+      if (this.account === '' || this.account.length !== 11) {
+        this.$Message.warning('请输入正确的账号')
       } else if (this.password === '') {
         this.$Message.warning('请输入密码')
       } else {
         this.loading = true
+        this.text = '登录中'
+        // manage-管理员； areaManager-区域经理； shoper-店长； agent-经纪人
         this.signIn()
       }
     },
     signIn () {
       const params = {
-        userName: this.account,
-        password: Number(this.password)
+        name: this.account,
+        pwd: this.password
       }
-      this.$axios.post(window.serverIp + '/sys/user/login', params)
+      this.$axios.post(window.serverIp + '/adminlogin', params)
         .then(res => {
           this.loading = false
-          console.log(res)
-          if (res.code === 0) {
-            // 缓存token
-            var data = res.body
-            store.commit('setToken', data.sid)
-            localStorage.setItem('token', data.sid)
-            this.$router.replace('/home/index')
+          this.text = '登录'
+          if (res.status === 'success') {
+            // 缓存token 和 role 角色
+            // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
+            /* 19831619641  123456 1 管理员
+            19831619642  123456 5 区经
+            19831619643  123456 6 店长
+            19831619644  123456 7 经纪人 */
+            var data = res.data
+            var role = res.data.user.roleId
+            store.commit('setToken', data.token)
+            localStorage.setItem('token', data.token)
+            store.commit('setRole', data.user.roleId)
+            localStorage.setItem('role', data.user.roleId)
+            // 根据不同的角色跳转到不同的页面;
+            if (role === 1) {
+              // 管理员
+              this.$router.replace('/home/datalist')
+            } else if (role === 5) {
+              // 区域经理
+              this.$router.replace('/home/news')
+            } else if (role === 6) {
+              // 店长
+              this.$router.replace('/home/news')
+            } else if (role === 7) {
+              // 经纪人
+              this.$router.replace('/home/customerlist')
+            }
           } else {
-            this.$Message.warning(res.msg)
+            this.$Message.error(res.message)
           }
         })
         .catch(err => {
           console.log(err)
         })
+    },
+    forget () {
+      this.$router.push('/findpass')
     }
   }
 }
@@ -117,6 +144,7 @@ export default {
           font-size:20px;
           text-align center;
           font-weight 700;
+          width:100%;
         .logBtn
           width:100%;
           height:40px;
@@ -127,6 +155,10 @@ export default {
           margin-top:16px;
         .input
           margin-top:20px;
+        .forget
+          color:#6181fb;
+          cursor:pointer;
+          text-align:right;
   .text
     width:100%;
     text-align center;

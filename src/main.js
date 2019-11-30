@@ -5,10 +5,11 @@ import App from './App'
 import router from './router'
 import iView from 'iview' // 引入iview依赖
 import 'iview/dist/styles/iview.css' // 引入iview css样式
-import VeLine from 'v-charts/lib/line.common' // 引入图表插件的折线图
+import VeLine from 'v-charts/lib/histogram.common' // 引入图表插件的柱状图
 import store from './store' // 引入vuex-store文件
 import axios from 'axios'
 import setAxios from './setAxios'
+import './assets/css/common.css' // 引入公共css文件
 setAxios()
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false

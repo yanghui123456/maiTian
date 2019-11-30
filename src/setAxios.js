@@ -10,9 +10,10 @@ export default function setAxios () {
   axios.interceptors.request.use(
     config => {
       config.headers['Content-Type'] = 'application/json;charset=UTF-8' // 设置请求头
+      // config.headers['Content-Type'] = 'application/x-www-form-urlencoded' // 设置请求头
       // 如果vuex中存在token,就设置请求头
       if (store.state.token) {
-        config.headers.sid = store.state.token
+        config.headers.token = store.state.token
       }
       return config
     }
@@ -27,7 +28,7 @@ export default function setAxios () {
       return response
     },
     error => {
-      // 跟后台约定好状态码，如果token过期，重新登录,并且情况locastorage和vuex中的token数据并返回至登录页
+      // 跟后台约定好状态码，如果token过期，重新登录,并且清空locastorage和vuex中的token数据并返回至登录页
       if (error.response) {
         switch (error.response.status) {
           case 401:

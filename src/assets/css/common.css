@@ -1,0 +1,93 @@
+/*公共css文件*/
+/*每个组件外部容器*/
+.container {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  background:white;
+  border-radius:20px;
+  box-sizing:border-box;
+  overflow:auto;
+}
+.pr{
+  position: relative;
+}
+.mt20{
+  margin-top:20px;
+}
+.mb20{
+  margin-bottom:20px;
+}
+.mt10{
+  margin-top:10px;
+}
+.mb10{
+  margin-bottom:10px;
+}
+
+.tc{
+  text-align:center;
+}
+.fr{
+  float: right;
+}
+.fl{
+  float: left;
+}
+.cRed{
+  color:red;
+}
+.fb{
+  font-weight: 700;
+}
+.f10{
+  font-size:10px;
+}
+.f17{
+  font-size:17px;
+}
+.f24{
+  font-size:24px;
+}
+.h20{
+  height:20px;
+  line-height:20px;
+}
+.paddLR{
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+.borderBottom{
+  border-bottom:1px solid #eee;
+  padding: 15px 0;
+  box-sizing: border-box;
+}
+/*文本框title*/
+.title {
+  display:inline-block;
+  width:86px;
+  height:32px;
+  line-height: 32px;
+  text-align: left;
+}
+.pageTitle{
+  width:100%;
+  /*padding: 0 10px;*/
+  height:50px;
+  line-height: 50px;
+  font-size:13px;
+  background: white;
+  box-sizing: border-box;
+  font-weight: 700;
+  color:black;
+}
+/*弹窗标题*/
+.modalTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: black;
+}
+.pt0{
+  padding-top:0;
+}
