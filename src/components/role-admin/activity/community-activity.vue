@@ -32,9 +32,10 @@
         <Col span="3">
           <!--管理员-->
           <Button type="info" v-if="role === 1" @click="seeBaoming(item.communityActityId)">查看</Button>
-          <!--区域经理-->
-          <Button type="info" v-if="role === 5" @click="enrollProgress(item.enrollDateStart, item.enrollDateEnd, 'bm')">报名</Button>
-          <Button type="info" v-if="role === 5" @click="enrollProgress(item.enrollDateStart, item.enrollDateEnd, 'cxbm')">撤销报名</Button>
+          <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
+          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, 'bm')">报名</Button>
+          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, 'cxbm')">撤销报名</Button>
+          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, 'xgbm')">修改报名</Button>
           <!--店长-->
          <Button type="info" v-if="role === 6" disabled>区域经理已报名</Button>
         </Col>
@@ -421,7 +422,7 @@
         </div>
         <!--区域经理:进度条查看有底部去报名；历史活动查看详情无底部报名-->
         <div v-if="role === 5 && seeDetailType === 1">
-          <Button type="info" @click="enroll">去报名</Button>
+          <!--<Button type="info" @click="enroll">去报名</Button>-->
           <Button type="info" @click="modal = false">取消</Button>
         </div>
         <!--店长-->
@@ -436,7 +437,7 @@
       v-model="enrollModal"
       class-name="modal"
       width="900px"
-      @on-visible-change="checkModal">
+      @on-visible-change="enrollModalChange">
       <p slot="header" class="tc">社区活动报名</p>
       <div class="modalCentenr">
         <!--区域名称-->
@@ -463,7 +464,11 @@
           <Row>
             <Col span="12">
             <span class="title">区域：</span>
-            <Input placeholder="请输入区域" style="width: auto" :disabled="disabled" v-model="enrollData.region"/>
+            <!--先模拟使用input，并且把四个字段值进行固定，后期再改-->
+            <Input placeholder="请输入大区" style="width: auto" :disabled="disabled" v-model="enrollData.region"/>
+            <!--<Select style="width:auto;" v-model="enrollData.region" @on-change="regionPickerChange" :placement="posit" placeholder="请选择区域">-->
+              <!--<Option v-for="item in regionList" :value="item.departmentId" :key="item.departmentId">{{ item.departmentName }}</Option>-->
+            <!--</Select>-->
             </Col>
           </Row>
         </div>
@@ -490,8 +495,9 @@
         </div>
       </div>
       <div slot="footer" class="tc">
-        <Button type="info" @click="signIn">报名</Button>
-        <Button type="info" @click="revoke">撤销报名</Button>
+        <Button type="info" @click="areaEnroll" :disabled="cnaEnroll !== 'bm'">报名</Button>
+        <Button type="info" @click="revoke" :disabled="cnaEnroll !== 'cxbm'">撤销报名</Button>
+        <Button type="info" @click="editEnroll" :disabled="cnaEnroll !== 'xgbm'">修改报名</Button>
         <Button type="info" @click="enrollModal = false">取消</Button>
       </div>
     </Modal>
@@ -987,13 +993,17 @@ export default {
       // =============================区域经理-报名
       enrollModal: false,
       seeDetailType: '', // 1-进度条查看；2-历史活动查看详情(区域经理和店长角色共同使用)
+      enrollActivityId: '', // 活动id
+      cnaEnroll: null, // 能否进行报名字段  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
       enrollData: { // 报名弹层数据
-        city: '', // 城市公司
-        area: '', // 片区
-        largeArea: '', // 大区
-        region: '', // 区域
+        city: '北京', // 城市公司
+        area: '片区A', // 片区
+        largeArea: '大区A', // 大区
+        region: '望京', // 区域
         social: []
       },
+      posit: 'bottom', // 下拉框定位的位置
+      regionList: [], // 报名弹窗-区域列表
       socialList: [], // 报名、撤销报名小区列表
       indeterminate: true,
       checkAll: false,
@@ -1624,6 +1634,22 @@ export default {
           // 礼品介绍
           giftList: []
         }
+      }
+    },
+    // 弹窗：报名弹窗关闭
+    enrollModalChange (status) {
+      if (!status) {
+        this.enrollData = {
+          city: '北京', // 城市公司
+          area: '片区A', // 片区
+          largeArea: '大区A', // 大区
+          region: '望京', // 区域
+          social: []
+        }
+        this.regionList = [] // 报名弹窗-区域列表
+        this.socialList = [] // 报名、撤销报名小区列表
+      } else {
+        this.disabled = true
       }
     },
     // 时间格式化
@@ -2478,34 +2504,60 @@ export default {
     },
     // ==============================区域经理
     // 进度条-报名、撤销报名  区分是报名还是撤销报名；1、点击时判断当前时间是否在报名期间
-    enrollProgress (start, end, type) {
+    enrollProgress (id, start, end, type) {
       /*
+      *id:活动的id
       * start:报名开始时间
       * end:报名结束时间
-      * type:bm:报名；cxbm:撤销报名
+      * type:bm:报名；cxbm:撤销报名; xgbm:修改报名  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
       * */
       var nowTime = new Date().getTime()
       var startTime = new Date(start).getTime()
       var endTime = new Date(end).getTime()
       if (nowTime > startTime && nowTime < endTime) {
         this.enrollModal = true
+        this.cnaEnroll = type
+        this.enrollActivityId = id
+        // 获取小区列表
+        this.getSocialList()
+        // 获取区域列表
+        this.getAreaList()
         if (type === 'bm') {
           this.$Message.success('报名')
-          // 获取小区列表
-          this.getSocialList()
         } else if (type === 'cxbm') {
           this.$Message.success('撤销报名')
+        } else if (type === 'xgbm') {
+          this.$Message.success('修改报名')
+          // 把数据进行绑值
         }
       } else {
         this.$Message.error('抱歉，当前时间不在报名期间')
       }
+    },
+    // 获取社区活动报名-区域下拉列表
+    getAreaList () {
+      this.$axios.get(window.serverIp + '/api/department')
+        .then(res => {
+          if (res.status === 'success') {
+            this.regionList = res.data
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 报名-区域下拉
+    regionPickerChange (val) {
+      console.log(val)
+      this.enrollData.region = val
     },
     // 获取小区列表
     getSocialList () {
       this.$axios.get(window.serverIp + '/api/region/getRegionOfUser')
         .then(res => {
           if (res.status === 'success') {
-            console.log(res.data)
             this.socialList = res.data
           } else {
             this.$Message.error(res.message)
@@ -2521,38 +2573,61 @@ export default {
       this.modal = false
       this.enrollModal = true
     },
-    // 弹窗-报名
-    signIn () {
-      this.$Message.success('报名')
-      this.enrollModal = false
+    // 弹窗-区域经理=报名
+    areaEnroll () {
+      // 将数组中每一项转换成字符串
+      var arr = []
+      for (var i = 0; i < this.enrollData.social.length; i++) {
+        arr.push(String(this.enrollData.social[i]))
+      }
+      this.$axios.post(window.serverIp + '/api/communityenroll', {
+        communityId: this.enrollActivityId,
+        selectRegionIds: arr
+      })
+        .then(res => {
+          if (res.status === 'success') {
+            // 重新获取正在执行的活动列表
+            this.enrollModal = false
+            this.getImplementActivit(this.manageImplementActivityUrl)
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
-    // 弹窗-撤销报名
+    // 弹窗-区域经理=修改报名
+    editEnroll () {
+
+    },
+    // 弹窗-区域经理撤=销报名
     revoke () {
       this.$Message.success('撤销报名')
       this.enrollModal = false
     },
     // 全选
     handleCheckAll () {
-      console.log(this.indeterminate)
-      console.log(this.checkAll)
       if (this.indeterminate) {
         this.checkAll = false
       } else {
         this.checkAll = !this.checkAll
       }
-       this.indeterminate = false
+      this.indeterminate = false
       if (this.checkAll) {
-        // signModalData中也有选择
-        // this.enrollData.social = ['0', '1', '2']
-        console.log('全选')
+        // 当全选时，让regionId都放到数组中
+        var arr = []
+        for (var i = 0; i < this.socialList.length; i++) {
+          arr.push(this.socialList[i].regionId)
+        }
+        this.enrollData.social = arr
       } else {
-        // this.enrollData.social = []
+        this.enrollData.social = []
       }
       console.log(this.enrollData.social)
     },
     // 选择多选框每一项
     checkAllGroupChange (data) {
-        console.log(data)
       // 当选中的数组长度等于小区列表数组长度是，为全选
       if (data.length === this.socialList.length) {
         this.indeterminate = false
