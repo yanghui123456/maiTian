@@ -31,7 +31,7 @@
         <!--报名期-->
         <Col span="3">
           <!--管理员-->
-          <Button type="info" v-if="role === 1" @click="seeBaoming(item.communityActityId)">查看</Button>
+          <Button type="info" v-if="role === 1" @click="seeBaoming(item.enrollDateStart, item.enrollDateEnd, item.communityActityId,'see')">查看</Button>
           <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
           <Button type="info" v-if="role === 5" :disabled="item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
           <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
@@ -42,7 +42,7 @@
         <!--报名审核期和培训期（管理员和区域经理）-->
         <Col span="6" v-if="role === 1 || role === 5">
           <!--管理员-->
-          <Button type="info" v-if="role === 1" @click="seeBaoming(item.communityActityId)">审核</Button>
+          <Button type="info" v-if="role === 1" @click="seeBaoming(item.auditDate, item.auditDateEnd, item.communityActityId, 'examine')">审核</Button>
           <!--区域经理：根据审核是否通过展示不同的按钮-->
           <!--<Button type="info" v-if="role === 5">审核通过</Button>-->
           <Button type="info" v-if="role === 5" @click="seeReason('baoMing')">查看审核不通过原因</Button>
@@ -60,7 +60,7 @@
         <!--培训期审核-->
         <Col span="3">
           <!--管理员-->
-          <Button type="info" @click="peixunShenhe"  v-if="role === 1">审核</Button>
+          <Button type="info" @click="seeBaoming(item.trainAuditStart, item.trainAuditEnd, item.communityActityId, 'trainAudit')"  v-if="role === 1">审核</Button>
           <!--区域经理-->
            <!--<Button type="info" v-if="role === 5">审核通过</Button>-->
         <Button type="info" v-if="role === 5" @click="seeReason('peiXun')">查看审核不通过原因</Button>
@@ -69,7 +69,7 @@
         </Col>
         <!--宣传期和执行期(管理员和区域经理)-->
         <Col span="6" v-if="role === 1 || role === 5">
-          <Button type="info" v-if="role === 1" @click="xiaDan">下单情况</Button>
+          <Button type="info" v-if="role === 1" @click="seeBaoming(item.publicityDateStart, item.publicityDateEnd, item.communityActityId, 'xiadan')">下单情况</Button>
         </Col>
         <!--宣传期(店长)-->
         <Col span="3" v-if="role === 6">
@@ -501,16 +501,17 @@
         <Button type="info" @click="enrollModal = false">取消</Button>
       </div>
     </Modal>
-    <!--管理员-报名+ 审核弹层-->
+    <!--管理员-报名列表+ 报名审核列表+ 培训期审核列表+ 宣传期下单情况列表弹层-->
     <Modal
       v-model="shAndbmModal"
       class-name="modal"
-      width="900px">
+      width="900px"
+      @on-visible-change="shAndbmModalChange">
       <p slot="header" class="tc">{{shAndbmTitle}}</p>
       <div class="modalCentenr">
         <!--报名审核-->
-        <Button type="info">筛选</Button>
-        <Button type="info">导出</Button>
+        <Button type="info" disabled>筛选</Button>
+        <Button type="info" disabled>导出</Button>
         <Table class="mt10" :columns="examineCol" :loading="examineLoading" :data="examineList" border height="420" size="small"></Table>
       </div>
       <div slot="footer" class="tc">
@@ -1357,7 +1358,8 @@ export default {
               h('Button', {
                 props: {
                   type: 'primary',
-                  size: 'small'
+                  size: 'small',
+                  disabled: this.bmAndbmsh
                 },
                 style: {
                   marginRight: '5px'
@@ -1371,7 +1373,8 @@ export default {
               h('Button', {
                 props: {
                   type: 'primary',
-                  size: 'small'
+                  size: 'small',
+                  disabled: this.bmAndbmsh
                 },
                 on: {
                   click: () => {
@@ -1383,6 +1386,7 @@ export default {
           }
         }
       ], // 报名期 + 审核期弹窗 表头
+      bmAndbmsh: '', // 该字段区分是报名true,审核和拒绝审核不可点击;还是报名审核false，审核和拒绝审核可以点击
       xiadanCol: [
         {
           type: 'index',
@@ -1576,7 +1580,7 @@ export default {
       /*
        * showModal:是否显示弹窗
        * title：弹窗的title
-       * type：1-报名弹窗；2-审核弹窗；3-下单情况； 4-外层table中查看报名 + 培训情况
+       * type：1-报名期查看弹窗；2-报名期审核弹窗；3-下单情况； 4-外层table中查看报名 + 培训情况 5-培训期审核列表
        * */
       this.shAndbmModal = showModal
       this.shAndbmTitle = title
@@ -1654,6 +1658,14 @@ export default {
         this.disabled = true
       }
     },
+    // 弹窗：【报名列表+ 报名审核列表+ 培训期审核列表+ 宣传期下单情况列表】关闭
+    shAndbmModalChange (status) {
+      if (!status) {
+        this.examineLoading = true
+        this.shAndbmTitle = ''
+        this.examineList = []
+      }
+    },
     // 时间格式化
     format (fmt, date) {
       var o = {
@@ -1695,7 +1707,6 @@ export default {
       this.$axios.get(window.serverIp + url)
         .then(res => {
           if (res.status === 'success') {
-            console.log(res.data)
             this.ImplementActivityList = res.data
           } else {
             this.$Message.error(res.message)
@@ -1751,6 +1762,17 @@ export default {
       // this.examineTotal = 20
     },
     // ==========================================管理员
+    // 判断当前时间是否在一段时间内
+    checkTime (start, end) {
+      var nowTime = new Date().getTime()
+      var startTime = new Date(start).getTime()
+      var endTime = new Date(end).getTime()
+      if (nowTime > startTime && nowTime < endTime) {
+        return true
+      } else {
+        return false
+      }
+    },
     // 进度条-管理员=编辑
     /*
     * role: manager-管理员角色编辑活动，area-区域经理角色查看活动（区经查看不可以上传图片）
@@ -1905,17 +1927,75 @@ export default {
           console.log(err)
         })
     },
-    // 管理员-进度条-报名期 / 进度条-报名期审核  无分页
-    seeBaoming (id) {
-      // this.examineTotal = 20
-      this.examineCol = this.bmAndshCol
-      this.$axios.get(window.serverIp + '/api/communityenroll/getActivityEnrollOfCommunity?communityId=' + id)
+    // 管理员-报名期/报名期审核/审核期培训/ 无分页
+    seeBaoming (start, end, id, type) {
+      /*
+      * start:报名审核期开始时间
+      * end:报名审核期结束时间
+      * type: 区分是报名期查看see；还是报名期审核examine; 培训期审核trainAudit; 宣传期-下单情况xiadan
+      * 报名期审核的时候判断当前的时间是否在审核期内
+      * */
+      var timeRight = this.checkTime(start, end) // 时间是否在报名期/报名审核期期间内
+      if (type === 'see') { // 报名期
+        this.examineCol = this.bmAndshCol // 报名期/报名期审核/审核期培训三者表头一样
+        this.bmAndbmsh = true
+        this.baoMingList('/api/communityenroll/getActivityEnrollOfCommunity?communityId=', id, type)
+      } else if (type === 'examine') { // 报名期审核
+        // 当时间在报名期审核内审核通过和审核不通过按钮可以点击，否则置灰
+        this.examineCol = this.bmAndshCol
+        if (timeRight) {
+          this.bmAndbmsh = false
+        } else {
+          this.bmAndbmsh = true
+        }
+        this.baoMingList('/api/communityenroll/getActivityEnrollOfCommunity?communityId=', id, type)
+      } else if (type === 'trainAudit') { // 培训期审核
+        this.examineCol = this.bmAndshCol
+        if (timeRight) {
+          this.bmAndbmsh = false
+        } else {
+          this.bmAndbmsh = true
+        }
+        // 一下都是模拟，到时候直接调用跟上边一样的方法，传递接口地址即可
+        this.examineLoading = false
+        this.examineList = [
+          {
+            name: '培训期审核'
+          }
+        ]
+        this.bmAndShStatus(true, '培训期审核列表', 5)
+        this.$Message.error('需要后台提供培训期审核列表接口')
+      } else if (type === 'xiadan') { // 下单
+        this.examineCol = this.xiadanCol
+        // 一下都是模拟，到时候直接调用跟上边一样的方法，传递接口地址即可
+        this.examineLoading = false
+        this.$Message.error('需要后台提供下单列表接口')
+        this.bmAndShStatus(true, '下单情况', 3)
+        this.examineList = [
+          {
+            name: '下单情况'
+          }
+        ]
+      }
+    },
+    // 管理员-报名期、报名期审核列表，同一个接口
+    baoMingList (url, id, type) {
+      this.$axios.get(window.serverIp + url + id)
         .then(res => {
           if (res.status === 'success') {
             console.log(res.data)
             this.examineLoading = false
-            this.bmAndShStatus(true, '报名审核', 1)
+            if (type === 'see') {
+              this.bmAndShStatus(true, '查看报名列表', 1)
+            } else if (type === 'examine') {
+              this.bmAndShStatus(true, '报名审核列表', 2)
+            } else if (type === 'trainAudit') {
+              this.bmAndShStatus(true, '培训期审核列表', 5)
+            } else if (type === 'xiadan') {
+              this.bmAndShStatus(true, '下单情况', 3)
+            }
             this.examineList = res.data
+            // this.examineTotal = 20
           } else {
             this.$Message.error(res.message)
           }
@@ -1923,32 +2003,6 @@ export default {
         .catch(err => {
           console.log(err)
         })
-    },
-    // 进度条-培训期审核
-    peixunShenhe () {
-      this.examineLoading = false
-      this.bmAndShStatus(true, '培训期审核', 2)
-      // 模拟数据
-      this.examineTotal = 20
-      this.examineCol = this.bmAndshCol
-      this.examineList = [
-        {
-          name: '培训期'
-        }
-      ]
-    },
-    // 进度条-下单情况
-    xiaDan () {
-      this.examineLoading = false
-      this.bmAndShStatus(true, '下单情况', 3)
-      // 模拟数据
-      this.examineTotal = 20
-      this.examineCol = this.xiadanCol
-      this.examineList = [
-        {
-          name: '下单情况'
-        }
-      ]
     },
     // 查看下单详情
     xiadanDetail (param) {
@@ -1965,10 +2019,10 @@ export default {
     },
     // 报名期 + 审核===审核通过
     baoMing () {
-      if (this.shAndbmType === 1) {
+      if (this.shAndbmType === 2) {
         // 报名
         this.$Message.error('报名审核通过啦')
-      } else if (this.shAndbmType === 2) {
+      } else if (this.shAndbmType === 5) {
         // 审核
         this.$Message.error('培训审核通过啦')
       } else if (this.shAndbmType === 4) {
@@ -1976,13 +2030,13 @@ export default {
         this.$Message.error('抱歉，您无权限')
       }
     },
-    // 报名期 + 审核=== 审核不通过
+    // 报名期审核=== 审核不通过
     examineNo () {
-      if (this.shAndbmType === 1) {
+      if (this.shAndbmType === 2) {
         // 报名
         this.$Message.error('报名审核不通过')
         this.auditFailedModal = true
-      } else if (this.shAndbmType === 2) {
+      } else if (this.shAndbmType === 5) {
         // 审核
         this.$Message.error('培训审核不通过')
         this.auditFailedModal = true
@@ -2505,7 +2559,7 @@ export default {
       }
     },
     // ==============================区域经理
-    // 进度条-报名、撤销报名  区分是报名还是撤销报名；1、点击时判断当前时间是否在报名期间
+    // 进度条-报名、撤销报名  区分是报名还是撤销报名；
     enrollProgress (id, start, end, arr, type) {
       /*
       *id:活动的id
@@ -2514,10 +2568,8 @@ export default {
       * arr:报名的小区
       * type:bm:报名；cxbm:撤销报名; xgbm:修改报名  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
       * */
-      var nowTime = new Date().getTime()
-      var startTime = new Date(start).getTime()
-      var endTime = new Date(end).getTime()
-      if (nowTime > startTime && nowTime < endTime) {
+      if (this.checkTime(start, end)) {
+        // 判断当前时间是否在报名期间
         this.enrollModal = true
         this.cnaEnroll = type
         this.enrollActivityId = id
@@ -2539,7 +2591,7 @@ export default {
           this.enrollData.social = regionArr
         }
       } else {
-        this.$Message.error('抱歉，当前时间不在报名期间')
+        this.$Message.error('抱歉，当前时间不在报名期间内')
       }
     },
     // 获取社区活动报名-区域下拉列表
