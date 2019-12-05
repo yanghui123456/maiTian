@@ -33,9 +33,9 @@
           <!--管理员-->
           <Button type="info" v-if="role === 1" @click="seeBaoming(item.communityActityId)">查看</Button>
           <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
-          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, 'bm')">报名</Button>
-          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, 'cxbm')">撤销报名</Button>
-          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, 'xgbm')">修改报名</Button>
+          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
+          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
+          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
           <!--店长-->
          <Button type="info" v-if="role === 6" disabled>区域经理已报名</Button>
         </Col>
@@ -438,7 +438,7 @@
       class-name="modal"
       width="900px"
       @on-visible-change="enrollModalChange">
-      <p slot="header" class="tc">社区活动报名</p>
+      <p slot="header" class="tc">{{enrollModalTitle}}</p>
       <div class="modalCentenr">
         <!--区域名称-->
         <div class="borderBottom">
@@ -496,7 +496,7 @@
       </div>
       <div slot="footer" class="tc">
         <Button type="info" @click="areaEnroll" :disabled="cnaEnroll !== 'bm'">报名</Button>
-        <Button type="info" @click="revoke" :disabled="cnaEnroll !== 'cxbm'">撤销报名</Button>
+        <Button type="info" @click="revokeEnroll" :disabled="cnaEnroll !== 'cxbm'">撤销报名</Button>
         <Button type="info" @click="editEnroll" :disabled="cnaEnroll !== 'xgbm'">修改报名</Button>
         <Button type="info" @click="enrollModal = false">取消</Button>
       </div>
@@ -991,7 +991,9 @@ export default {
         ]
       },
       // =============================区域经理-报名
+      areaEnrollUrl: '/api/communityenroll', // 区域经理报名、撤销报名、修改报名url
       enrollModal: false,
+      enrollModalTitle: '', // 报名弹窗标题
       seeDetailType: '', // 1-进度条查看；2-历史活动查看详情(区域经理和店长角色共同使用)
       enrollActivityId: '', // 活动id
       cnaEnroll: null, // 能否进行报名字段  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
@@ -1636,7 +1638,7 @@ export default {
         }
       }
     },
-    // 弹窗：报名弹窗关闭
+    // 弹窗：区域经理报名弹窗关闭
     enrollModalChange (status) {
       if (!status) {
         this.enrollData = {
@@ -2504,11 +2506,12 @@ export default {
     },
     // ==============================区域经理
     // 进度条-报名、撤销报名  区分是报名还是撤销报名；1、点击时判断当前时间是否在报名期间
-    enrollProgress (id, start, end, type) {
+    enrollProgress (id, start, end, arr, type) {
       /*
       *id:活动的id
       * start:报名开始时间
       * end:报名结束时间
+      * arr:报名的小区
       * type:bm:报名；cxbm:撤销报名; xgbm:修改报名  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
       * */
       var nowTime = new Date().getTime()
@@ -2523,12 +2526,17 @@ export default {
         // 获取区域列表
         this.getAreaList()
         if (type === 'bm') {
-          this.$Message.success('报名')
+          this.enrollModalTitle = '报名'
         } else if (type === 'cxbm') {
-          this.$Message.success('撤销报名')
+          this.enrollModalTitle = '撤销报名'
         } else if (type === 'xgbm') {
-          this.$Message.success('修改报名')
+          this.enrollModalTitle = '修改报名'
           // 把数据进行绑值
+          var regionArr = []
+          for (var i = 0; i < arr.length; i++) {
+            regionArr.push(arr[i].regionId)
+          }
+          this.enrollData.social = regionArr
         }
       } else {
         this.$Message.error('抱歉，当前时间不在报名期间')
@@ -2580,15 +2588,13 @@ export default {
       for (var i = 0; i < this.enrollData.social.length; i++) {
         arr.push(String(this.enrollData.social[i]))
       }
-      this.$axios.post(window.serverIp + '/api/communityenroll', {
+      this.$axios.post(window.serverIp + this.areaEnrollUrl, {
         communityId: this.enrollActivityId,
         selectRegionIds: arr
       })
         .then(res => {
           if (res.status === 'success') {
-            // 重新获取正在执行的活动列表
-            this.enrollModal = false
-            this.getImplementActivit(this.manageImplementActivityUrl)
+            this.enrollCommonResult('报名成功')
           } else {
             this.$Message.error(res.message)
           }
@@ -2599,12 +2605,45 @@ export default {
     },
     // 弹窗-区域经理=修改报名
     editEnroll () {
-
+      var arr = []
+      for (var i = 0; i < this.enrollData.social.length; i++) {
+        arr.push(String(this.enrollData.social[i]))
+      }
+      this.$axios.put(window.serverIp + this.areaEnrollUrl, {
+        communityId: this.enrollActivityId,
+        selectRegionIds: arr
+      })
+        .then(res => {
+          if (res.status === 'success') {
+            this.enrollCommonResult('修改报名成功')
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 弹窗-区域经理撤=销报名
-    revoke () {
-      this.$Message.success('撤销报名')
+    revokeEnroll () {
+      this.$axios.delete(window.serverIp + this.areaEnrollUrl + '?communityId=' + this.enrollActivityId)
+        .then(res => {
+          if (res.status === 'success') {
+            this.enrollCommonResult('撤销报名成功')
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 弹窗-区域经理 报名、撤销报名、修改报名公用
+    enrollCommonResult (text) {
+      // 重新获取正在执行的活动列表
+      this.$Message.success(text)
       this.enrollModal = false
+      this.getImplementActivit(this.manageImplementActivityUrl)
     },
     // 全选
     handleCheckAll () {
