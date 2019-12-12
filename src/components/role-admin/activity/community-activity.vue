@@ -26,16 +26,18 @@
           <!--区域经理-->
           <Button type="info" v-if="role === 5" @click="adminEdit(item.communityActityId, 'area')">查看</Button>
           <!--店长-->
-          <Button type="info" v-if="role === 6" @click="shoperDetail">查看活动详情</Button>
+          <!--<Button type="info" v-if="role === 6" @click="shoperDetail">查看活动详情</Button>-->
+          <Button type="info" v-if="role === 6" @click="adminEdit(item.communityActityId, 'dianzhang')">查看活动详情</Button>
         </Col>
         <!--报名期-->
         <Col span="3">
           <!--管理员-->
           <Button type="info" v-if="role === 1" @click="seeBaoming(item.enrollDateStart, item.enrollDateEnd, item.communityActityId,'see')">查看</Button>
           <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
-          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
-          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
-          <Button type="info" v-if="role === 5" :disabled="item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null" disabled>已报名</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
           <!--店长-->
          <Button type="info" v-if="role === 6" disabled>区域经理已报名</Button>
         </Col>
@@ -44,8 +46,9 @@
           <!--管理员-->
           <Button type="info" v-if="role === 1" @click="seeBaoming(item.auditDate, item.auditDateEnd, item.communityActityId, 'examine')">审核</Button>
           <!--区域经理：根据审核是否通过展示不同的按钮-->
-          <!--<Button type="info" v-if="role === 5">审核通过</Button>-->
-          <Button type="info" v-if="role === 5" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
+          <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1">审核通过</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollFail !== null" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
+          <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 0">管理员暂未审核</Button>
         </Col>
         <!--报名审核期（店长）-->
         <Col span="3" v-if="role === 6">
@@ -62,8 +65,9 @@
           <!--管理员-->
           <Button type="info" @click="seeBaoming(item.trainAuditStart, item.trainAuditEnd, item.communityActityId, 'trainAudit')"  v-if="role === 1">审核</Button>
           <!--区域经理-->
-           <!--<Button type="info" v-if="role === 5">审核通过</Button>-->
-        <Button type="info" v-if="role === 5" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
+           <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '1'">审核通过</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainFail !== null" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
+          <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '0'">管理员暂未审核</Button>
           <!--店长=培训审核通过后店长才可以下单-->
           <Button type="info" v-if="role === 6" disabled>管理员审核通过</Button>
         </Col>
@@ -1781,7 +1785,7 @@ export default {
     },
     // 进度条-管理员=编辑
     /*
-    * role: manager-管理员角色编辑活动，area-区域经理角色查看活动（区经查看不可以上传图片）
+    * role: manager-管理员角色编辑活动，area-区域经理角色查看活动（区经查看不可以上传图片）;dianzhang-店长角色查看活动详情
     * */
     adminEdit (id, role) {
       this.$axios.get(window.serverIp + '/api/community/getCommunityById?activityId=' + id)
@@ -1796,6 +1800,10 @@ export default {
               this.modalStatus(true, '社群活动详情', true)
               this.activityDis = true
               this.seeDetailType = 1
+            } else if (role === 'dianzhang') {
+              this.modalStatus(true, '社群活动详情', true)
+              this.activityDis = true
+              this.seeDetailType = 2
             }
             this.managerEditId = id
             var act = res.data.communityActivity // 活动信息
@@ -2764,8 +2772,8 @@ export default {
     // 审核不通过
     seeReason (type, bmAndshReason) {
       /* type: baoMing=报名不通过；peiXun:审核不通过
-      bmAndshReason: 该对象里包括报名期审核不通过的原因
-      活动中的communityEnroll中的enrollFail查看原因
+      bmAndshReason: 该对象里包括报名期审核、培训期审核不通过的原因
+      活动中的communityEnroll中的enrollFail查看报名不通过原因；trainFail查看培训审核不通原因
       */
       this.auditDisabled = true // 弹窗中的文本框是否禁用
       if (type === 'baoMing') {
@@ -2773,10 +2781,7 @@ export default {
           this.$Message.warning('抱歉，该活动您暂未报名！')
         } else {
           var reason = bmAndshReason.enrollFail // 区经报名被管理员拒绝时的原因字段
-          if (bmAndshReason.enrollState === 1) {
-            // 管理员-同意报名
-            this.$Message.success('恭喜，你的报名申请已通过！')
-          } else if (reason === null) {
+          if (reason === null) {
             // 管理员-未审核
             this.$Message.warning('抱歉，您报名的活动管理员还未审核！')
           } else if (reason !== null) {
@@ -2786,7 +2791,19 @@ export default {
           }
         }
       } else if (type === 'peiXun') {
-
+        if (bmAndshReason === null) { // 活动未报名
+          this.$Message.warning('抱歉，该活动您暂未报名！')
+        } else {
+          var trainReason = bmAndshReason.trainFail // 区经培训被管理员拒绝时的原因字段
+          if (trainReason === null) {
+            // 管理员-未审核
+            this.$Message.warning('抱歉，您的培训审核管理员还未审核！')
+          } else if (trainReason !== null) {
+            // 管理员-拒绝报名
+            this.failedReason = trainReason
+            this.auditFailedModal = true // 审核不通过原因弹窗
+          }
+        }
       }
     },
     // ===========================================店长
