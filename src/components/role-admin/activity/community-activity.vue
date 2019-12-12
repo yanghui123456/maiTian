@@ -45,7 +45,7 @@
           <Button type="info" v-if="role === 1" @click="seeBaoming(item.auditDate, item.auditDateEnd, item.communityActityId, 'examine')">审核</Button>
           <!--区域经理：根据审核是否通过展示不同的按钮-->
           <!--<Button type="info" v-if="role === 5">审核通过</Button>-->
-          <Button type="info" v-if="role === 5" @click="seeReason('baoMing')">查看审核不通过原因</Button>
+          <Button type="info" v-if="role === 5" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
         </Col>
         <!--报名审核期（店长）-->
         <Col span="3" v-if="role === 6">
@@ -63,7 +63,7 @@
           <Button type="info" @click="seeBaoming(item.trainAuditStart, item.trainAuditEnd, item.communityActityId, 'trainAudit')"  v-if="role === 1">审核</Button>
           <!--区域经理-->
            <!--<Button type="info" v-if="role === 5">审核通过</Button>-->
-        <Button type="info" v-if="role === 5" @click="seeReason('peiXun')">查看审核不通过原因</Button>
+        <Button type="info" v-if="role === 5" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
           <!--店长=培训审核通过后店长才可以下单-->
           <Button type="info" v-if="role === 6" disabled>管理员审核通过</Button>
         </Col>
@@ -1558,6 +1558,10 @@ export default {
     } else if (this.role === 6) {
       // 店长
       this.dataCol = this.areaManagerCol
+      // 历史社群活动
+      this.getHistoryActivitieTable(this.manageHistoryActivityUrl)
+      // 正在执行的活动
+      this.getImplementActivit(this.manageImplementActivityUrl)
       // 是否是待办消息过来： true-与查看活动详情方法一样
       var showXdModal = this.$route.query.showXdModal
       if (showXdModal) {
@@ -2756,14 +2760,34 @@ export default {
         this.checkAll = false
       }
     },
-    // 区域经理-审核结果
+    // 区域经理-报名审核期、培训审核期-审核不通过原因查看
     // 审核不通过
-    seeReason (type) {
-      // type: baoMing=报名不通过；peiXun:审核不通过
-      this.auditFailedModal = true
-      this.auditDisabled = true
-      this.failedReason = '抱歉，您的审核管理员未通过!'
-      this.$Message.warning(type)
+    seeReason (type, bmAndshReason) {
+      /* type: baoMing=报名不通过；peiXun:审核不通过
+      bmAndshReason: 该对象里包括报名期审核不通过的原因
+      活动中的communityEnroll中的enrollFail查看原因
+      */
+      this.auditDisabled = true // 弹窗中的文本框是否禁用
+      if (type === 'baoMing') {
+        if (bmAndshReason === null) { // 活动未报名
+          this.$Message.warning('抱歉，该活动您暂未报名！')
+        } else {
+          var reason = bmAndshReason.enrollFail // 区经报名被管理员拒绝时的原因字段
+          if (bmAndshReason.enrollState === 1) {
+            // 管理员-同意报名
+            this.$Message.success('恭喜，你的报名申请已通过！')
+          } else if (reason === null) {
+            // 管理员-未审核
+            this.$Message.warning('抱歉，您报名的活动管理员还未审核！')
+          } else if (reason !== null) {
+            // 管理员-拒绝报名
+            this.failedReason = reason
+            this.auditFailedModal = true // 审核不通过原因弹窗
+          }
+        }
+      } else if (type === 'peiXun') {
+
+      }
     },
     // ===========================================店长
     // 查看活动详情
