@@ -1015,6 +1015,8 @@ export default {
       shAndbmTitle: '',
       shAndbmType: '', // 1-报名弹窗；2-审核弹窗
       examineLoading: true,
+      mtCommunityActityId: '', // 报名期审核列表中审核时需要用的，该活动的id
+      mtBaomingShenheExzaminNo: '', // 报名期审核列表，审核不通过时，缓存该条数据，调用不通过接口时使用
       /* examineTotal: 0,
       examinePageNum: 1, */
       examineCol: [
@@ -1293,7 +1295,7 @@ export default {
           width: 120,
           render: (h, params) => {
             var status = params.row.trainState
-            if (status === 0) {
+            if (status === '0') {
               return h('div', [
                 h('span', {
                   props: {
@@ -1304,7 +1306,7 @@ export default {
                   }
                 }, '未审核')
               ])
-            } else if (status === 1) {
+            } else if (status === '1') {
               return h('div', [
                 h('span', {
                   props: {
@@ -1313,9 +1315,9 @@ export default {
                   },
                   on: {
                   }
-                }, '审核通过')
+                }, '已审核')
               ])
-            } else if (status === 2) {
+            } else if (status === '2') {
               return h('div', [
                 h('span', {
                   props: {
@@ -1349,7 +1351,7 @@ export default {
         },
         {
           title: '操作',
-          key: 'communityActityId',
+          key: 'communityId',
           align: 'center',
           width: 190,
           fixed: 'right',
@@ -1366,7 +1368,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.baoMing()
+                    this.baomingExamine(params.row)
                   }
                 }
               }, '审核通过'),
@@ -1378,7 +1380,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.examineNo()
+                    this.baomingExamineNo(params.row)
                   }
                 }
               }, '审核不通过')
@@ -1932,9 +1934,11 @@ export default {
       /*
       * start:报名审核期开始时间
       * end:报名审核期结束时间
+      * id:
       * type: 区分是报名期查看see；还是报名期审核examine; 培训期审核trainAudit; 宣传期-下单情况xiadan
       * 报名期审核的时候判断当前的时间是否在审核期内
       * */
+      this.mtCommunityActityId = id // 把活动id存起来，报名列表审核的时候需要用到
       var timeRight = this.checkTime(start, end) // 时间是否在报名期/报名审核期期间内
       if (type === 'see') { // 报名期
         this.examineCol = this.bmAndshCol // 报名期/报名期审核/审核期培训三者表头一样
@@ -1989,11 +1993,12 @@ export default {
               this.bmAndShStatus(true, '查看报名列表', 1)
             } else if (type === 'examine') {
               this.bmAndShStatus(true, '报名审核列表', 2)
-            } else if (type === 'trainAudit') {
+            }
+            /* else if (type === 'trainAudit') {
               this.bmAndShStatus(true, '培训期审核列表', 5)
             } else if (type === 'xiadan') {
               this.bmAndShStatus(true, '下单情况', 3)
-            }
+            } */
             this.examineList = res.data
             // this.examineTotal = 20
           } else {
@@ -2017,11 +2022,14 @@ export default {
     seeZongjie () {
       this.$Message.error('查看活动总结')
     },
-    // 报名期 + 审核===审核通过
-    baoMing () {
+    // 报名期审核 + 审核===审核通过
+    baomingExamine (params) {
       if (this.shAndbmType === 2) {
-        // 报名
-        this.$Message.error('报名审核通过啦')
+        // 报名期审核通过
+        console.log(params)
+        var param = params
+        param.enrollState = 1
+        this.baomingShenheHttp(param)
       } else if (this.shAndbmType === 5) {
         // 审核
         this.$Message.error('培训审核通过啦')
@@ -2030,12 +2038,28 @@ export default {
         this.$Message.error('抱歉，您无权限')
       }
     },
-    // 报名期审核=== 审核不通过
-    examineNo () {
+    // 管理员==报名期审核通过、不通过接口
+    baomingShenheHttp (params) {
+      this.$axios.put(window.serverIp + '/api/communityenroll/communityEnrollVerify', params)
+        .then(res => {
+          if (res.status === 'success') {
+            // 重新获取报名列表
+            this.baoMingList('/api/communityenroll/getActivityEnrollOfCommunity?communityId=', this.mtCommunityActityId, 'examine')
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 管理员-报名期审核=== 审核不通过
+    baomingExamineNo (param) {
       if (this.shAndbmType === 2) {
         // 报名
-        this.$Message.error('报名审核不通过')
         this.auditFailedModal = true
+        // 审核的那条数据
+        this.mtBaomingShenheExzaminNo = param
       } else if (this.shAndbmType === 5) {
         // 审核
         this.$Message.error('培训审核不通过')
@@ -2535,14 +2559,15 @@ export default {
       if (this.failedReason === '') {
         this.$Message.warning('请填写审核不通过原因')
       } else {
-        if (this.shAndbmType === 1) {
-          // 报名不通过
+        if (this.shAndbmType === 2) {
+          // 管理员-报名期-审核不通过
           this.$Message.error('确认审核不通过')
           this.auditFailedModal = false
-        } else if (this.shAndbmType === 2) {
-          // 审核不通过
-          this.$Message.error('确认审核不通过')
-          this.auditFailedModal = false
+          console.log(this.mtBaomingShenheExzaminNo)
+          var data = this.mtBaomingShenheExzaminNo
+          data.enrollState = 2
+          data.enrollFail = this.failedReason
+          this.baomingShenheHttp(data)
         }
       }
     },
