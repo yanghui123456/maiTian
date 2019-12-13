@@ -8,7 +8,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     token: '',
-    role: '' // 角色
+    role: '', // 角色
+    userId: '' // 登录用户的userI
   },
   mutations: {
     setToken (state, token) {
@@ -18,6 +19,10 @@ export default new Vuex.Store({
     // 设置角色
     setRole (state, role) {
       this.state.role = role
+    },
+    // 设置userID
+    setUserId (state, userID) {
+      this.state.userId = userID
     }
   }
 })

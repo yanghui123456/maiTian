@@ -75,6 +75,8 @@ export default {
             localStorage.setItem('token', data.token)
             store.commit('setRole', data.user.roleId)
             localStorage.setItem('role', data.user.roleId)
+            store.commit('setUserId', data.user.userId)
+            localStorage.setItem('userId', data.user.userId)
             // 根据不同的角色跳转到不同的页面;
             if (role === 1) {
               // 管理员
