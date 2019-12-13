@@ -61,10 +61,15 @@
         </Col>
         <!--培训期（店长）-->
         <Col span="3" v-if="role === 6">
-          <!--店长-->
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1" @click="shoperXiadan(item, item.communityActityId)">活动礼品下单</Button>
+          <!--店长：1、活动礼品未下单(区经已报名并且管理员审核已通过)
+          2.活动礼品未下单（区经已报名并且管理员审核拒绝或者未审核）
+          3.活动礼品下单（区经未报名）
+          4、活动礼品已下单
+          -->
+          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1 && item.communityOrderItems === null" @click="shoperXiadan(item, item.communityActityId)">活动礼品下单</Button>
           <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" disabled>活动礼品下单</Button>
           <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>活动礼品下单</Button>
+          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1 && item.communityOrderItems !== null">已下单</Button>
         </Col>
         <!--培训期审核-->
         <Col span="3">
@@ -1418,79 +1423,79 @@ export default {
         },
         {
           title: '区域',
-          key: 'name',
+          key: 'area',
           align: 'center',
           width: 100
         },
         {
-          title: '门店',
-          key: 'name',
+          title: '区域',
+          key: 'shop',
           align: 'center',
           width: 130
         },
         {
           title: '店组',
-          key: 'name',
+          key: 'shopgroup',
           align: 'center',
           width: 100
         },
         {
           title: '礼品名称',
-          key: 'name',
+          key: 'giftNames',
           align: 'center',
           width: 120
         },
         {
           title: '礼品数量',
-          key: 'name',
+          key: 'giftNumbers',
           align: 'center',
           width: 150
         },
         {
           title: '礼品价格',
-          key: 'name',
+          key: 'giftPrices',
           align: 'center',
           width: 100
         },
         {
           title: '礼品总价',
-          key: 'name',
+          key: 'giftTotal',
           align: 'center',
           width: 100
         },
         {
           title: '其他预估花费',
-          key: 'name',
+          key: 'otherCost',
           align: 'center',
           width: 100
         },
         {
           title: '预估总价',
-          key: 'name',
+          key: 'totalCost',
           align: 'center',
           width: 100
         },
         {
           title: '快递地址',
-          key: 'name',
+          key: 'receiveAddress',
           align: 'center',
           width: 100
         },
         {
           title: '接收人',
-          key: 'name',
+          key: 'receiver',
           align: 'center',
           width: 100
         },
         {
           title: '联系电话',
-          key: 'name',
+          key: 'receiverTel',
           align: 'center',
           width: 100
         },
         {
           title: '操作',
-          key: 'gender',
+          key: 'giftOrderId',
           align: 'center',
           width: 190,
           fixed: 'right',
@@ -1506,7 +1511,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.xiadanDetail(params.row)
+                    this.managerxiadanDetail(params.row)
                   }
                 }
               }, '查看详情')
@@ -1605,7 +1610,7 @@ export default {
       /*
        * showModal:是否显示弹窗
        * title：弹窗的title
-       * type：1-报名期查看弹窗；2-报名期审核弹窗；3-下单情况； 4-外层table中查看报名 + 培训情况 5-培训期审核列表
+       * type：1-管理员=报名期查看弹窗；2-管理员=报名期审核弹窗；3-管理员=下单情况； 4-外层table中查看报名 + 培训情况 5-管理员=培训期审核列表
        * */
       this.shAndbmModal = showModal
       this.shAndbmTitle = title
@@ -2004,11 +2009,11 @@ export default {
       * */
       this.mtCommunityActityId = id // 把活动id存起来，报名列表审核的时候需要用到
       var timeRight = this.checkTime(start, end) // 时间是否在报名期/报名审核期期间内
-      if (type === 'see') { // 报名期
+      if (type === 'see') { // 管理员=报名期
         this.examineCol = this.bmAndshCol // 报名期/报名期审核/审核期培训三者表头一样
         this.bmAndbmsh = true
         this.baoMingList('/api/communityenroll/getActivityEnrollOfCommunity?communityId=', id, type)
-      } else if (type === 'examine') { // 报名期审核 【和培训期审核接口一样】
+      } else if (type === 'examine') { // 管理员=报名期审核 【和培训期审核接口一样】
         // 当时间在报名期审核内审核通过和审核不通过按钮可以点击，否则置灰
         this.examineCol = this.bmAndshCol
         if (timeRight) {
@@ -2017,7 +2022,7 @@ export default {
           this.bmAndbmsh = true
         }
         this.baoMingList('/api/communityenroll/getActivityEnrollOfCommunity?communityId=', id, type)
-      } else if (type === 'trainAudit') { // 培训期审核 【和报名期审核接口一样】【注意：培训期审核中的审核按钮，必须报名审核通过后才可以进行审核，否则置灰】
+      } else if (type === 'trainAudit') { // 管理员=培训期审核 【和报名期审核接口一样】【注意：培训期审核中的审核按钮，必须报名审核通过后才可以进行审核，否则置灰】
         this.examineCol = this.bmAndshCol
         if (timeRight) {
           this.bmAndbmsh = false
@@ -2025,17 +2030,23 @@ export default {
           this.bmAndbmsh = true
         }
         this.baoMingList('/api/communityenroll/getActivityEnrollOfCommunity?communityId=', id, type)
-      } else if (type === 'xiadan') { // 下单
+      } else if (type === 'xiadan') { // 管理员=下单
         this.examineCol = this.xiadanCol
-        // 一下都是模拟，到时候直接调用跟上边一样的方法，传递接口地址即可
-        this.examineLoading = false
-        this.$Message.error('需要后台提供下单列表接口')
-        this.bmAndShStatus(true, '下单情况', 3)
-        this.examineList = [
-          {
-            name: '下单情况'
-          }
-        ]
+        // 获取下单列表
+        this.$axios.get(window.serverIp + '/api/communitygiftorder/getCommunityGiftOrders?activityId=' + id)
+          .then(res => {
+            if (res.status === 'success') {
+              console.log(res.data)
+              this.examineLoading = false
+              this.bmAndShStatus(true, '下单情况', 3)
+              this.examineList = res.data
+            } else {
+              this.$Message.error(res.message)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
       }
     },
     // 管理员-报名期、报名期审核列表，同一个接口
@@ -2065,11 +2076,70 @@ export default {
           console.log(err)
         })
     },
-    // 查看下单详情
-    xiadanDetail (param) {
+    // 管理员=查看下单详情
+    managerxiadanDetail (param) {
       console.log(param)
       this.xiadanStatus(true, '查看下单详情', true)
       this.showOtherMoney = false // 不展示其他费用
+      // 给区域名称和快递信息进行绑值
+      var data = this.signModalData
+      data.bigArea = param.area
+      data.region = param.shop
+      data.dianzu = param.shopgroup
+      data.address = param.receiveAddress
+      data.person = param.receiver
+      data.tel = param.receiverTel
+      data.activityXiadanInput = true
+      // 给礼品列表进行绑值
+      this.$axios.get(window.serverIp + '/api/communitygift/getCommunityGift?activityId=' + this.mtCommunityActityId)
+        .then(res => {
+          if (res.status === 'success') {
+            // 礼品列表
+            console.log(res.data)
+            data.customgiftList = res.data
+            // 往每个item中追加一个步进的数组
+            for (var j = 0; j < data.customgiftList.length; j++) {
+              var end = data.customgiftList[j].giftMost // 最大数量
+              var steps = data.customgiftList[j].step // 计步器
+              var arr = [] // 自己生成的计步器数组
+              var giftPrice = data.customgiftList[j].giftPrice // 单价
+              var totalPrice = '' // 总价
+              for (var i = 0; i < Math.floor(Number(end) / Number(steps)); i++) {
+                arr.push({
+                  name: (i + 1) * steps,
+                  code: i
+                })
+                totalPrice = giftPrice * steps
+              }
+              console.log(arr)
+              data.customgiftList[j].numList = arr
+              // 礼品总价 = 每一个礼品的个数（计步器） * 礼品价格
+              data.giftTotal = totalPrice
+              // 费用总价
+              // data.total = item.giftCost + totalPrice
+            }
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+//      signModalData: {
+//          customgiftList: [ // 定制礼品
+//          {
+//            giftName: '', // 礼品名称
+//            giftDetail: '', // 礼品描述
+//            giftPrice: '', // 礼品金额
+//            giftLeast: '', // 起始数量
+//            giftMost: '', // 最大数量
+//            step: '',
+//            giftTop: '', // 第一张图片
+//            numList: [] // 中间的下拉
+//          }
+//        ]
+//      },
+
     },
     // 进度条-活动总结
     uploadZongjie () {
