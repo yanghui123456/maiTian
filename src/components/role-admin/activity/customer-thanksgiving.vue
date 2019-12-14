@@ -3,7 +3,7 @@
   <div class="container">
     <div class="mb20" v-if="role === 1">
       <Button type="info" @click="addActivity">添加活动</Button>
-      <Button type="info" @click="downLoad">下载成交客户名单模板</Button>
+      <Button type="info" @click="downLoad" disabled>下载成交客户名单模板</Button>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
@@ -22,30 +22,24 @@
             <Col span="12">
             <span class="title">活动受众：</span>
             <Select :disabled="disabled" v-model="modalData.audience" @on-change="audienceSelectChange" :placement="posit" placeholder="请选择活动受众">
-              <Option v-for="item in audienceList" :value="item.code" :key="item.code">{{ item.name }}</Option>
+              <Option v-for="item in audienceList" :value="item.valueCode" :key="item.baseId">{{ item.valueCode }}</Option>
             </Select>
             </Col>
           </Row>
           <!--管理员角色可见；店长不可见-->
           <Row v-if="role === 1">
-            <Col span="12">
+            <Col span="24">
             <span class="title">选择可参加的店组：</span>
             <Checkbox
               :indeterminate="indeterminate"
               :value="checkAll"
-              @click.prevent.native="handleCheckAll">全选</Checkbox>
-            <CheckboxGroup v-model="modalData.shop" @on-change="checkAllGroupChange">
-              <Checkbox label="1">
-                <span>第一</span>
-              </Checkbox>
-              <Checkbox label="2">
-                <span>第二</span>
-              </Checkbox>
-              <Checkbox label="3">
-                <span>第三</span>
+              @click.prevent.native="handleCheckAll" :disabled="avtivityStatus === 'see'">全选</Checkbox>
+            <CheckboxGroup v-model="modalData.shop" @on-change="checkAllGroupChange" >
+              <Checkbox :label="item.departmentId" v-for="item in shopList" :key="item.regionId" style="margin-right:20px;" :disabled="avtivityStatus === 'see'">
+                <span>{{item.departmentName}}</span>
               </Checkbox>
             </CheckboxGroup>
-            {{modalData.shop}}
+            <!--{{modalData.shop}}-->
             </Col>
           </Row>
         </div>
@@ -77,34 +71,53 @@
           <Row>
             <Col span="12">
             <span class="title">批量导入：</span>
-            <Button type="info" @click="choiceFile">选择Excel文件</Button>
+            <div>
+              <Upload
+                ref="upload"
+                :show-upload-list="false"
+                :on-success="excelUpSuccess"
+                :format="['xls', 'xlsx']"
+                :max-size="1000000000"
+                :on-format-error="handleFormatError"
+                :on-exceeded-size="handleMaxSize"
+                :action="upLoadUrl"
+                style="float: left;margin-right:30px"
+                v-if="this.avtivityStatus === 'add'">
+                <i-button icon="ios-cloud-upload-outline" style="color:#2db7f5">选择Excel文件</i-button>
+              </Upload>
+              <!--客户信息已上传-->
+              <Button style="float: left" type="info" v-if="modalData.userUploadExcelUrl !== ''">客户信息已上传</Button>
+            </div>
             </Col>
           </Row>
         </div>
         <!--礼品信息-->
         <p class="modalTitle mt10">礼品信息</p>
         <div class="borderBottom" v-for="(item, index) in modalData.giftList" :key="index">
-          <div style="overflow: hidden">
-            <!--管理员角色可见；店长不可见-->
-            <Button v-if="role === 1" type="error" size="small" style="float: right" @click="deletItem(item.id)">删除该项</Button>
+          <div style="overflow: hidden" >
+            <!--管理员角色可见（新增可见，查看不可见）；店长不可见-->
+            <Button v-if="role === 1 && avtivityStatus === 'add'" type="error" size="small" style="float: right" @click="deletItem(item.id)">删除该项</Button>
           </div>
           <Row>
             <Col span="5" style="margin-top:30px">
-            <Upload
-              ref="upload"
-              :show-upload-list="false"
-              :on-success="handleSuccess"
-              :format="['jpg','jpeg','png']"
-              :max-size="2048"
-              :on-format-error="handleFormatError"
-              :on-exceeded-size="handleMaxSize"
-              action="https://mp.cd.htaibao.com/merchant/picture"
-              style="display: inline-block;width:58px;">
-              <div style="width: 58px;height:58px;line-height: 58px;border:1px solid #eee;" class="tc">
-                <Icon type="ios-camera" size="20"></Icon>
-              </div>
-            </Upload>
-            <img :src="item.src" alt="图片" style="display:inline-block;width:58px;height:58px;border-radius: 5px;background: red;position: absolute;top:0;left:80px">
+            <div @click="clickUpload(item)">
+              <Upload
+                ref="upload"
+                :show-upload-list="false"
+                :on-success="handleSuccess"
+                :format="['jpg','jpeg','png']"
+                :max-size="2048"
+                :on-format-error="handleFormatError"
+                :on-exceeded-size="handleMaxSize"
+                :action="upLoadUrl"
+                style="display: inline-block;width:58px;"
+                v-if="avtivityStatus === 'add'">
+                <div style="width: 58px;height:58px;line-height: 58px;border:1px solid #eee;" class="tc">
+                  <Icon type="ios-camera" size="20"></Icon>
+                </div>
+              </Upload>
+            </div>
+            <img :src="item.img" alt="图片" style="display:inline-block;width:58px;height:58px;border-radius: 5px;position: absolute;top:0;left:80px" v-if="item.img !== ''">
             </Col>
             <Col span="16">
             <Row>
@@ -115,14 +128,14 @@
               <Input placeholder="请输入礼品描述" style="width: auto" :disabled="disabled" v-model="item.describe"/>
               </Col>
               <Col span="24">
-              <Input placeholder="请输入礼品价格" style="width: auto" :disabled="disabled" v-model="item.price"/>
+              <Input placeholder="请输入礼品价格" style="width: auto" :disabled="disabled" v-model="item.price" type="number"/>
               </Col>
             </Row>
             </Col>
           </Row>
         </div>
-        <!--管理员角色可见；店长不可见-->
-        <div class="borderBottom" v-if="role === 1">
+        <!--管理员角色可见(新增可见，查看详情不可见)；店长不可见-->
+        <div class="borderBottom" v-if="role === 1 && this.avtivityStatus === 'add'">
           <Button type="info" class="mt10" @click="addGift">继续添加礼品</Button>
         </div>
         <!--时间-->
@@ -130,15 +143,13 @@
           <Row>
             <Col span="24">
             <span class="title">礼品最晚送达时间：</span>
-            <DatePicker type="date" :disabled="disabled" placeholder="礼品最晚送达时间" style="width: auto" v-model="modalData.serviceTime" @on-change="serviceChange"></DatePicker>
-            <TimePicker :editable="true" :disabled="disabled" v-model="modalData.serviceTimeDetail" format="HH点mm分ss秒" placeholder="时分秒" style="width: 168px"></TimePicker>
+            <DatePicker :editable="false" v-model="modalData.serviceTime" @on-change="serviceChange" :disabled="disabled" type="datetime" placeholder="请选择礼品最晚送达时间" style="width:auto"></DatePicker>
             </Col>
           </Row>
           <Row>
             <Col span="24">
             <span class="title">礼品最晚签收时间：</span>
-            <DatePicker type="date" :disabled="disabled" placeholder="请选择礼品最晚签收时间" style="width: auto" v-model="modalData.signTime" @on-change="signChange"></DatePicker>
-            <TimePicker :editable="true" :disabled="disabled" v-model="modalData.signTimeDetail" format="HH点mm分ss秒" placeholder="时分秒" style="width: 168px"></TimePicker>
+            <DatePicker v-model="modalData.signTime" @on-change="signChange" :disabled="disabled" type="datetime" placeholder="请选择礼品最晚签收时间" style="width:auto"></DatePicker>
             </Col>
           </Row>
           <Row>
@@ -152,31 +163,27 @@
             <Row>
               <Col span="24">
               <span class="title">推送至店长时间：</span>
-              <DatePicker type="date" :disabled="disabled" placeholder="请选择推送至店长时间" style="width: auto" v-model="modalData.shoperTime" @on-change="shoperChange"></DatePicker>
-              <TimePicker :editable="true" :disabled="disabled" v-model="modalData.shoperTimeDetail" format="HH点mm分ss秒" placeholder="时分秒" style="width: 168px"></TimePicker>
+              <DatePicker v-model="modalData.shoperTime" @on-change="shoperChange" :disabled="disabled" type="datetime" placeholder="请选择推送至店长时间" style="width:auto"></DatePicker>
               </Col>
             </Row>
             <Row>
               <Col span="24">
               <span class="title">推送至经纪人时间：</span>
-              <DatePicker type="date" :disabled="disabled" placeholder="请选择推送至经纪人时间" style="width: auto" v-model="modalData.agentTime" @on-change="agentChange"></DatePicker>
-              <TimePicker :editable="true" :disabled="disabled" v-model="modalData.agentTimeDetail" format="HH点mm分ss秒" placeholder="时分秒" style="width: 168px"></TimePicker>
+              <DatePicker v-model="modalData.agentTime" @on-change="agentChange" :disabled="disabled" type="datetime" placeholder="请选择推送至经纪人时间" style="width:auto"></DatePicker>
               </Col>
             </Row>
             <Row>
               <Col span="24">
               <span class="title">活动结束时间：</span>
-              <DatePicker type="date" :disabled="disabled" placeholder="请选择活动结束时间" style="width: auto" v-model="modalData.endTime" @on-change="endChange"></DatePicker>
-              <TimePicker :editable="true" :disabled="disabled" v-model="modalData.endTimeDetail" format="HH点mm分ss秒" placeholder="时分秒" style="width: 168px"></TimePicker>
+              <DatePicker v-model="modalData.endTime" @on-change="endChange" :disabled="disabled" type="datetime" placeholder="请选择活动结束时间" style="width:auto"></DatePicker>
               </Col>
             </Row>
           </div>
         </div>
       </div>
       <div slot="footer" class="tc">
-        <!--管理员角色可见；店长不可见-->
-        <div v-if="role === 1">
-          <Button type="info" @click="save">保存</Button>
+        <!--管理员角色可见（管理员-添加时可见，查看时不可见）；店长不可见-->
+        <div v-if="role === 1 && this.avtivityStatus === 'add'">
           <Button type="info" @click="publish">发布</Button>
           <Button type="info" @click="cancel">取消</Button>
         </div>
@@ -204,8 +211,11 @@
 export default {
   data () {
     return {
-      role: 2, // 原型中区域经理是没有感恩礼这个模块的   1=管理员；2=店长；
+      imgHttp: '',
+      upLoadUrl: '',
+      role: '', // 原型中区域经理是没有感恩礼这个模块的   1=管理员；2=店长；
       // ============== 管理员角色===========
+      avtivityStatus: '', // 管理员角色，区分是新增 add，还是查看 see
       // 所有活动列表
       loading: true, // 表格加载
       total: 0,
@@ -214,12 +224,14 @@ export default {
       dataCol: [],
       managerCol: [
         {
-          type: 'index',
-          width: 60,
+          title: '序号',
+          width: 70,
           align: 'center',
-          fixed: 'left'
+          render: (h, params) => {
+            return h('span', params.index + (this.pageNum - 1) * this.pageSize + 1)
+          }
         },
-        {
+        /* {
           title: '发生时间',
           key: 'name',
           align: 'center',
@@ -235,63 +247,70 @@ export default {
           title: '本月礼品支持数量',
           align: 'center',
           width: 150
-        },
+        }, */
         {
           title: '活动主题',
-          key: 'gender',
+          key: 'theme',
           align: 'center',
           width: 150
         },
         {
           title: '活动受众',
-          key: 'gender',
+          key: 'targetGroup',
           align: 'center',
           width: 100
         },
         {
           title: '活动目的',
-          key: 'gender',
+          key: 'target',
           align: 'center',
           width: 100
         },
         {
           title: '活动描述',
-          key: 'gender',
+          key: 'activityDetail',
           align: 'center',
           width: 100
         },
         {
-          title: '礼品名称',
-          key: 'gender',
+          title: '礼品送达时间',
+          key: 'lastReceiveTime',
           align: 'center',
-          width: 100
-        },
-        {
-          title: '礼品描述',
-          key: 'gender',
-          align: 'center',
-          width: 100
-        },
-        {
-          title: '礼品价格',
-          key: 'gender',
-          align: 'center'
-        },
-        {
-          title: '礼品图片',
-          key: 'gender',
-          align: 'center',
-          width: 100
+          width: 150
         },
         {
           title: '咨询方式',
-          key: 'gender',
+          key: 'consultaction',
           align: 'center',
-          width: 100
+          width: 150
+        },
+        {
+          title: '查看活动详情',
+          key: 'gratefulActivityId',
+          align: 'center',
+          width: 135,
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.activeDetail(params.row.gratefulActivityId)
+                  }
+                }
+              }, '查看详情')
+            ])
+          }
         },
         {
           title: '查看礼品送达情况',
-          key: 'gender',
+          key: 'gratefulActivityId',
           align: 'center',
           width: 135,
           fixed: 'right',
@@ -307,6 +326,7 @@ export default {
                 },
                 on: {
                   click: () => {
+                    this.$Message.error('未联调')
                     this.sendDetail(params.row)
                   }
                 }
@@ -502,43 +522,25 @@ export default {
       modalTitle: '',
       disabled: false, // 文本框是否禁用
       posit: 'bottom', // 下拉框定位的位置
-      audienceList: [
-        {
-          name: '受众1',
-          code: 1111
-        },
-        {
-          name: '受众2',
-          code: 2222
-        }
-      ],
+      audienceList: [], // 活动受众
+      shopList: [], // 可添加的店组
+      moreUploadId: '', // 添加礼品项中点击上传图片项的id
+      excelListInfo: [], // 用户添加感恩礼-上传excel成功后返回的excel列表内容
       modalData: {
+        userUploadExcelUrl: '', // 用户已上传excel的地址
         audience: '', // 受众
         shop: [], // 店组
         theme: '', // 活动主题
         objective: '', // 活动目的
         description: '', // 活动描述
         serviceTime: '', // 礼品最晚送达时间
-        serviceTimeDetail: '', // 礼品最晚送达时间，时分
         signTime: '', // 礼品最晚签收时间
-        signTimeDetail: '', // 礼品最晚签收时间，时分
         tel: '', // 咨询电话
         shoperTime: '', // 推送至店长时间
-        shoperTimeDetail: '', // 推送至店长时间, 时分
         agentTime: '', // 推送至经纪人时间
-        agentTimeDetail: '', // 推送至经纪人时间, 时分
         endTime: '', // 活动结束时间
-        endTimeDetail: '', // 活动结束时间, 时分
         // 礼品介绍
-        giftList: [
-          {
-            id: 1,
-            name: '', // 礼品名称
-            describe: '', // 礼品描述
-            img: '', // 图片
-            price: '' // 价格
-          }
-        ]
+        giftList: []
       },
       indeterminate: true, // 全选
       checkAll: false,
@@ -676,10 +678,15 @@ export default {
     }
   },
   created () {
+    this.imgHttp = window.serverIp
+    this.upLoadUrl = window.serverIp + '/fileupload' // 管理员-上传感恩礼活动-客户信息Excel
+    // 获取-角色
+    var roles = localStorage.getItem('role')
+    this.role = Number(roles)
     if (this.role === 1) {
       // 管理员
       this.dataCol = this.managerCol
-      this.getManageTable()
+      this.getManageTable(this.pageNum, this.pageSize)
     } else if (this.role === 2) {
       // 店长
       this.dataCol = this.shoperCol
@@ -711,58 +718,207 @@ export default {
       console.log(status)
       // true=显示；false=隐藏
       if (status === false) {
+        this.avtivityStatus = ''
+        this.audienceList = [] // 活动受众
+        this.shopList = [] // 可添加的店组
+        this.moreUploadId = '' // 添加礼品项中点击上传图片项的id
+        this.excelListInfo = [] // 用户添加感恩礼-上传excel成功后返回的excel列表内容
+        this.modalData = {
+          userUploadExcelUrl: '', // 用户已上传excel的地址
+          audience: '', // 受众
+          shop: [], // 店组
+          theme: '', // 活动主题
+          objective: '', // 活动目的
+          description: '', // 活动描述
+          serviceTime: '', // 礼品最晚送达时间
+          signTime: '', // 礼品最晚签收时间
+          tel: '', // 咨询电话
+          shoperTime: '', // 推送至店长时间
+          agentTime: '', // 推送至经纪人时间
+          endTime: '', // 活动结束时间
+          // 礼品介绍
+          giftList: []
+        }
       }
     },
-    // 管理员--表格
-    getManageTable () {
-      const data = []
-      for (let i = 0; i < 2; i++) {
-        data.push({
-          key: i,
-          name: 'John Brown',
-          age: i + 1,
-          street: 'Lake Park',
-          building: 'C',
-          door: 2035,
-          caddress: 'Lake Street 42',
-          cname: 'SoftLake Co',
-          gender: 'M'
+    // 管理员--感恩礼列表
+    getManageTable (pageNum, pageSize) {
+      this.$axios.get(window.serverIp + '/api/gratefulactivity/getAll?pageNum=' + pageNum + '&pageSize=' + pageSize)
+        .then(res => {
+          if (res.status === 'success') {
+            this.dataList = res.data.records
+            this.loading = false
+            this.total = res.data.total
+          } else {
+            this.$Message.error(res.message)
+          }
         })
-      }
-      this.dataList = data
-      this.loading = false
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 页码改变
     pageChange (val) {
       this.pageNum = val
-      // this.getTable(val, 10)
+      this.getManageTable(val, this.pageSize)
     },
     // 下载成交模板
     downLoad () {
       this.$Message.warning('下载成交客户名单模板')
     },
     // =========================添加感恩礼活动
-    // 添加活动
-    addActivity () {
-      this.modalStatus(true, '添加客户感恩礼活动', false)
+    // 获取受众列表
+    getShouzhongList () {
+      this.$axios.get(window.serverIp + '/api/baseinfo/getAllAudience')
+        .then(res => {
+          if (res.status === 'success') {
+            this.audienceList = res.data
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
-    // 保存活动
-    save () {
-      this.$Message.warning('保存')
-      console.log(this.modalData)
+    // 获取可参加的电组
+    getDianzu () {
+      this.$axios.get(window.serverIp + '/api/department/getAllGroup?pageNum=1&pageSize=20')
+        .then(res => {
+          if (res.status === 'success') {
+            this.shopList = res.data.records
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 管理员=添加活动
+    addActivity () {
+      this.avtivityStatus = 'add'
+      this.modalStatus(true, '添加客户感恩礼活动', false)
+      // 活动活动受众、可参加的店组
+      this.getShouzhongList()
+      this.getDianzu()
+    },
+    // 上传礼品图片是的标识，上传哪一个给哪一个礼品图片赋值
+    clickUpload (param) {
+      console.log('点击的是===' + param.id)
+      // 获取点击项的id, 根据id给上传成功的图片添加到某一项
+      this.moreUploadId = param.id
     },
     // 发布活动
     publish () {
-      this.$Message.warning('发布')
+      var data = this.modalData
+      if (data.audience === '') {
+        this.$Message.error('请选择活动受众')
+      } else if (data.shop.length === 0) {
+        this.$Message.error('请选择店组')
+      } else if (data.theme === '') {
+        this.$Message.error('请输入活动主题')
+      } else if (data.objective === '') {
+        this.$Message.error('请输入活动目的')
+      } else if (data.description === '') {
+        this.$Message.error('请输入活动描述')
+      } else if (data.userUploadExcelUrl === '') {
+        this.$Message.error('请上传客户信息Excel文件')
+      } else if (data.serviceTime === '') {
+        this.$Message.error('请选择礼品最晚送达时间')
+      } else if (data.signTime === '') {
+        this.$Message.error('请选择礼品最晚签收时间')
+      } else if (data.tel === '') {
+        this.$Message.error('请输入咨询方式')
+      } else if (data.shoperTime === '') {
+        this.$Message.error('请选择推送至店长时间')
+      } else if (data.agentTime === '') {
+        this.$Message.error('请选择推送至经纪人时间')
+      } else if (data.endTime === '') {
+        this.$Message.error('请选择活动结束时间')
+      } else {
+        // 判断礼品
+        if (data.giftList.length === 0) {
+          this.$Message.error('请添加至少一项礼品介绍')
+        } else {
+          var giftlist = data.giftList
+          for (var i = 0; i < giftlist.length; i++) {
+            if (giftlist[i].name === '') {
+              this.$Message.error('请输入礼品名称')
+              return false
+            } else if (giftlist[i].describe === '') {
+              this.$Message.error('请输入礼品描述')
+              return false
+            } else if (giftlist[i].price === '') {
+              this.$Message.error('请输入礼品价格')
+              return false
+            } else if (giftlist[i].img === '') {
+              this.$Message.error('请上传礼品图片')
+              return false
+            }
+          }
+          console.log(this.modalData.giftList)
+          var giftLists = []
+          for (var j = 0; j < giftlist.length; j++) {
+            giftLists.push({
+              giftName: giftlist[j].name,
+              giftDetail: giftlist[j].describe,
+              giftPrice: giftlist[j].price,
+              giftPic: giftlist[j].img
+            })
+          }
+          console.log(giftLists)
+          // 店组数据更改成后台要的方式
+          var shopArr = []
+          for (var a = 0; a < data.shop.length; a++) {
+            shopArr.push({
+              departmentId: data.shop[a]
+            })
+          }
+          // 新增感恩礼
+          var params = {
+            targetGroup: data.audience, // 活动受众
+            theme: data.theme, // 活动主题
+            target: data.objective, // 活动目标
+            activityDetail: data.description, // 活动描述
+            lastReceiveTime: data.serviceTime, // 最晚送达时间
+            lastSignTime: data.signTime, // 最晚签收时间
+            consultaction: data.tel, // 咨询方式
+            shopownerTime: data.shoperTime, // 店主推送时间
+            agentTime: data.agentTime, // 经纪人推送时间
+            activityOver: data.endTime, // 活动结束时间
+            gratefulGifts: giftLists, // 礼品列表
+            shopGroups: shopArr, // 店组
+            gratefulCustoms: this.excelListInfo // 用户上传的客户excel列表内容
+          }
+          this.addThanksGiving(params)
+        }
+      }
+    },
+    // 新增感恩礼活动
+    addThanksGiving (params) {
+      this.$axios.post(window.serverIp + '/api/gratefulactivity', params)
+        .then(res => {
+          if (res.status === 'success') {
+            this.$Message.success('新增感恩礼成功')
+            this.modalStatus(false, '', false)
+            this.getManageTable(this.pageNum, this.pageSize)
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 取消活动
     cancel () {
-      this.$Message.warning('取消')
+      this.modalStatus(false, '', false)
     },
-    // 城市改变
+    // 活动受众改变
     audienceSelectChange (val) {
       console.log(val)
-      this.audience = val
+      this.modalData.audience = val
     },
     // 礼品最晚送达时间
     serviceChange (time, date) {
@@ -789,10 +945,6 @@ export default {
       console.log(time)
       this.modalData.endTime = time
     },
-    // 选择文件
-    choiceFile () {
-      this.$Message.warning('选择文件')
-    },
     // 添加某一组礼品
     addGift () {
       // 往modalData中的giftList中追加一项空数据
@@ -812,11 +964,53 @@ export default {
       this.modalData.giftList.splice(id - 1, 1)
       console.log(this.modalData.giftList)
     },
-    // 图片上传成功时
-    handleSuccess (response, file, fileList) {
+    // 管理员=感恩礼-上传客户信息excel成功
+    excelUpSuccess (response, file, fileList) {
       console.log(response)
       console.log(file)
       console.log(fileList)
+      if (response.status === 'success') {
+        this.$Message.success('客户信息excel上传成功')
+        this.modalData.userUploadExcelUrl = response.data.filepath
+        // 获取客户上传的excel列表中的数据
+        this.$axios.post(window.serverIp + '/api/gratefulactivity/importActivityCustom', {
+          gratefulActivityId: '', // 活动id，新增感恩礼上传成功传空
+          filepath: response.data.filepath,
+          filename: response.data.filename
+        })
+          .then(res => {
+            if (res.status === 'success') {
+              this.$Message.success('成功获取列表中的信息')
+              console.log(res.data)
+              this.excelListInfo = res.data
+            } else {
+              this.$Message.error(res.message)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      } else {
+        this.$Message.error(response.message)
+      }
+    },
+    // 图片上传成功时
+    handleSuccess (response, file, fileList) {
+      var url = response.data.filepath
+      if (response.status === 'success') {
+        this.$Message.success('图片上传成功')
+        console.log('应该上传的项是==' + this.moreUploadId)
+        var id = this.moreUploadId
+        var data = this.modalData.giftList
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].id === id) {
+            data[i].img = this.imgHttp + url
+          }
+        }
+        console.log(this.modalData.giftList)
+      } else {
+        this.$Message.error(response.message)
+      }
     },
     // 文件格式验证失败
     handleFormatError (file, fileList) {
@@ -839,14 +1033,20 @@ export default {
       }
       this.indeterminate = false
       if (this.checkAll) {
-        this.modalData.shop = ['1', '2', '3']
+        // 当全选时，让regionId都放到数组中
+        var arr = []
+        for (var i = 0; i < this.shopList.length; i++) {
+          arr.push(this.shopList[i].departmentId)
+        }
+        this.modalData.shop = arr
       } else {
         this.modalData.shop = []
       }
+      console.log(this.modalData.shop)
     },
     // 选择多选框
     checkAllGroupChange (data) {
-      if (data.length === 3) {
+      if (data.length === this.shopList.length) {
         this.indeterminate = false
         this.checkAll = true
       } else if (data.length > 0) {
@@ -856,6 +1056,57 @@ export default {
         this.indeterminate = false
         this.checkAll = false
       }
+    },
+    // 管理员=查看活动详情
+    activeDetail (id) {
+      console.log(id)
+      this.getShouzhongList() // 获取受众列表
+      this.getDianzu() // 获取店组
+      this.avtivityStatus = 'see'
+      this.modalStatus(true, '查看客户感恩礼活动', true)
+      // 绑值
+      this.$axios.get(window.serverIp + '/api/gratefulactivity/getGratefulById?activityId=' + id)
+        .then(res => {
+          if (res.status === 'success') {
+            console.log(res.data)
+            var data = res.data
+            var modalData = this.modalData
+            var httpGiftList = data.gratefulGifts // 后台返回的礼品列表
+            var httpShopList = data.shopGroups // 后台返回的店组列表
+            var giftArr = [] // 自己改装后的礼品列表
+            var shopList = [] // 自己封装后的用户已选择的店组列表
+            for (var i = 0; i < httpGiftList.length; i++) {
+              giftArr.push({
+                id: giftArr.length + 1, // 自定义的id
+                name: httpGiftList[i].giftName, // 礼品名称
+                describe: httpGiftList[i].giftDetail, // 礼品描述
+                price: httpGiftList[i].giftPrice, // 礼品价格
+                img: httpGiftList[i].giftPic // 图片
+              })
+            }
+            for (var j = 0; j < httpShopList.length; j++) {
+              shopList.push(httpShopList[j].shopgroupId)
+            }
+            modalData.audience = data.targetGroup // 活动受众
+            modalData.theme = data.theme // 活动主题
+            modalData.objective = data.target // 活动目的
+            modalData.description = data.activityDetail // 活动描述
+            modalData.serviceTime = data.lastReceiveTime // 最晚送达时间
+            modalData.signTime = data.lastSignTime // 最晚签收时间
+            modalData.tel = data.consultaction // 咨询电话
+            modalData.shoperTime = data.shopownerTime // 店主推送时间
+            modalData.agentTime = data.agentTime // 经纪人推送时间
+            modalData.endTime = data.activityOver // 活动结束时间
+            modalData.userUploadExcelUrl = 's' // 用户上传的客户excel的地址:复制为不为空的字符串，这样用户已上传信息按钮才会显示
+            modalData.giftList = giftArr // 礼品列表
+            modalData.shop = shopList // 店组列表
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // ======================成交感恩礼送达详情
     sendDetail () {

@@ -113,7 +113,8 @@
             <i-button icon="ios-cloud-upload-outline" style="color:#2db7f5">上传活动总结</i-button>
           </Upload>
         </div>
-        <Button type="info" class="mt10" @click="seeZongjie">查看活动总结</Button>
+        <!--周总说先不显示此按钮-->
+        <!--<Button type="info" class="mt10" @click="seeZongjie">查看活动总结</Button>-->
         </Col>
       </Row>
     </div>
