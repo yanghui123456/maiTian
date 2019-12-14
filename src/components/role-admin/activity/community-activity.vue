@@ -99,7 +99,20 @@
         </Col>
         <!--活动总结-->
         <Col span="3" v-if="role === 1">
-        <Button type="info" @click="uploadZongjie">上传活动总结</Button>
+        <!--<Button type="info" @click="uploadZongjie">上传活动总结</Button>-->
+        <div @click="getActiveId(item.communityActityId)">
+          <Upload
+            ref="upload"
+            :show-upload-list="false"
+            :on-success="docUpSuccess"
+            :format="['doc']"
+            :max-size="1000000000"
+            :on-format-error="handleFormatError"
+            :on-exceeded-size="handleMaxSize"
+            :action="upLoadUrl">
+            <i-button icon="ios-cloud-upload-outline" style="color:#2db7f5">上传活动总结</i-button>
+          </Upload>
+        </div>
         <Button type="info" class="mt10" @click="seeZongjie">查看活动总结</Button>
         </Col>
       </Row>
@@ -1015,6 +1028,8 @@ export default {
           }
         ]
       },
+      // ===========================管理员-上传活动总结
+      managerUploadId: '', // 上传活动总结时的活动id
       // =============================区域经理-报名
       areaEnrollUrl: '/api/communityenroll', // 区域经理报名、撤销报名、修改报名url
       enrollModal: false,
@@ -2078,7 +2093,6 @@ export default {
     },
     // 管理员=查看下单详情
     managerxiadanDetail (param) {
-      console.log(param)
       this.xiadanStatus(true, '查看下单详情', true)
       this.showOtherMoney = false // 不展示其他费用
       // 给区域名称和快递信息进行绑值
@@ -2095,7 +2109,6 @@ export default {
         .then(res => {
           if (res.status === 'success') {
             // 礼品列表
-            console.log(res.data)
             data.customgiftList = res.data
             // 往每个item中追加一个步进的数组
             for (var j = 0; j < data.customgiftList.length; j++) {
@@ -2111,12 +2124,9 @@ export default {
                 })
                 totalPrice = giftPrice * steps
               }
-              console.log(arr)
               data.customgiftList[j].numList = arr
               // 礼品总价 = 每一个礼品的个数（计步器） * 礼品价格
               data.giftTotal = totalPrice
-              // 费用总价
-              // data.total = item.giftCost + totalPrice
             }
           } else {
             this.$Message.error(res.message)
@@ -2125,21 +2135,6 @@ export default {
         .catch(err => {
           console.log(err)
         })
-//      signModalData: {
-//          customgiftList: [ // 定制礼品
-//          {
-//            giftName: '', // 礼品名称
-//            giftDetail: '', // 礼品描述
-//            giftPrice: '', // 礼品金额
-//            giftLeast: '', // 起始数量
-//            giftMost: '', // 最大数量
-//            step: '',
-//            giftTop: '', // 第一张图片
-//            numList: [] // 中间的下拉
-//          }
-//        ]
-//      },
-
     },
     // 进度条-活动总结
     uploadZongjie () {
@@ -2263,6 +2258,38 @@ export default {
       this.modalData.signTime = time
       this.changeSignTime = true
       console.log(this.modalData.signTime)
+    },
+    // 管理员获取上传活动总结的活动id
+    getActiveId (id) {
+      console.log(id)
+      this.managerUploadId = id
+    },
+    // 管理员=上传活动总结
+    docUpSuccess (response, file, fileList) {
+      console.log(response)
+      console.log(file)
+      console.log(fileList)
+      if (response.status === 'success') {
+        // 更新接口
+        this.$axios.put(window.serverIp + '/api/community/updateSummery', {
+          communityId: this.managerUploadId,
+          filepath: response.data.filepath
+        })
+          .then(res => {
+            if (res.status === 'success') {
+              this.$Message.success('活动总结上传成功')
+              // 更新正在执行的社群活动
+              this.getImplementActivit(this.manageImplementActivityUrl)
+            } else {
+              this.$Message.error(res.message)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      } else {
+        this.$Message.error(response.message)
+      }
     },
     // 图片上传成功时
     uopload1 (response, file, fileList) {
