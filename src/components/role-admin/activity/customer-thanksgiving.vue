@@ -441,7 +441,7 @@ export default {
             ])
           }
         },
-        {
+        /* {
           title: '客户信息Excel',
           key: 'gender',
           align: 'center',
@@ -464,30 +464,38 @@ export default {
               }, '下载')
             ])
           }
-        },
+        }, */
         {
           title: '礼品送达门店情况',
-          key: 'gender',
+          key: 'customStatus',
           align: 'center',
           width: 135,
           fixed: 'right',
           render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.shopDetail(params.row)
+            var status = params.row.customStatus
+            if (status === null) {
+              return h('div', [
+                h('Button', {
+                  props: {
+                    type: 'primary',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.shopDetail(params.row)
+                    }
                   }
-                }
-              }, '确认礼品送达')
-            ])
+                }, '确认礼品送达')
+              ])
+            } else {
+              return h('div', [
+                h('span', {
+                }, '已送达，手动确认')
+              ])
+            }
           }
         }
       ], // 店长表头
@@ -1150,6 +1158,22 @@ export default {
     shopDetail (param) {
       console.log(param)
       this.$Message.warning('通过后台接口更改状态即可更改状态')
+      this.$axios.put(window.serverIp + '/api/gratefulcustom/updateGratefulCustomState', {
+        gratefulActivityId: param.gratefulActivityId,
+        customId: param.customIds,
+        status: param.customStatus,
+      })
+        .then(res => {
+          if (res.status === 'success') {
+            // 重新获取感恩礼列表
+            this.getManageTable(this.pageNum, this.pageSize)
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 筛选
     screen () {
