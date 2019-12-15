@@ -189,7 +189,7 @@
         </div>
       </div>
     </Modal>
-    <!--查看感恩礼送达详情-->
+    <!--查看感恩礼送达详情：周总说先不分页-->
     <Modal
       v-model="detailModal"
       title="成交客户感恩礼礼品送达详情"
@@ -197,12 +197,12 @@
       width="900px">
       <p slot="header" class="tc">成交客户感恩礼礼品送达详情</p>
       <div class="modalCentenr">
-        <Button type="info" @click="exportFile" class="mb10">导出</Button>
+        <Button type="info" @click="exportFile" class="mb10" disabled>导出</Button>
         <Button type="info" @click="screen" class="mb10" v-if="role === 2">筛选</Button>
         <Table :columns="detailCol" :loading="detailLoading" :data="detailTable" border height="420" size="small"></Table>
       </div>
       <div slot="footer" class="tc">
-        <Page :total="detailTotal" :current="detailPageNum" show-total @on-change="detailPageChange" class="mt20 tc"/>
+        <!--<Page :total="detailTotal" :current="detailPageNum" show-total @on-change="detailPageChange" class="mt20 tc"/>-->
       </div>
     </Modal>
   </div>
@@ -245,6 +245,115 @@ export default {
         },
         {
           title: '本月礼品支持数量',
+          align: 'center',
+          width: 150
+        }, */
+        {
+          title: '活动主题',
+          key: 'theme',
+          align: 'center',
+          width: 150
+        },
+        {
+          title: '活动受众',
+          key: 'targetGroup',
+          align: 'center',
+          width: 100
+        },
+        {
+          title: '活动目的',
+          key: 'target',
+          align: 'center',
+          width: 200
+        },
+        {
+          title: '活动描述',
+          key: 'activityDetail',
+          align: 'center',
+          width: 300
+        },
+        {
+          title: '礼品送达时间',
+          key: 'lastReceiveTime',
+          align: 'center',
+          width: 150
+        },
+        {
+          title: '咨询方式',
+          key: 'consultaction',
+          align: 'center',
+          width: 150
+        },
+        {
+          title: '查看活动详情',
+          key: 'gratefulActivityId',
+          align: 'center',
+          width: 135,
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.activeDetail(params.row.gratefulActivityId)
+                  }
+                }
+              }, '查看详情')
+            ])
+          }
+        },
+        {
+          title: '查看礼品送达情况',
+          key: 'gratefulActivityId',
+          align: 'center',
+          width: 135,
+          fixed: 'right',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.seeSendDetail(params.row.gratefulActivityId)
+                  }
+                }
+              }, '查看')
+            ])
+          }
+        }
+      ], // 管理员表头
+      dataList: [],
+      // =================店长角色==============
+      shoperCol: [
+        {
+          title: '序号',
+          width: 70,
+          align: 'center',
+          render: (h, params) => {
+            return h('span', params.index + (this.pageNum - 1) * this.pageSize + 1)
+          }
+        },
+        /* {
+          title: '本月成交客户总量',
+          key: 'name',
+          align: 'center',
+          width: 150
+        },
+        {
+          title: '本月礼品支持数量',
+          key: 'name',
           align: 'center',
           width: 150
         }, */
@@ -313,7 +422,6 @@ export default {
           key: 'gratefulActivityId',
           align: 'center',
           width: 135,
-          fixed: 'right',
           render: (h, params) => {
             return h('div', [
               h('Button', {
@@ -326,102 +434,18 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.$Message.error('未联调')
-                    this.sendDetail(params.row)
+                    this.seeSendDetail(params.row.gratefulActivityId)
                   }
                 }
               }, '查看')
             ])
           }
-        }
-      ], // 管理员表头
-      dataList: [],
-      // =================店长角色==============
-      shoperCol: [
-        {
-          type: 'index',
-          width: 60,
-          align: 'center',
-          fixed: 'left'
-        },
-        {
-          title: '本月成交客户总量',
-          key: 'name',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '本月礼品支持数量',
-          key: 'name',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '活动主题',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '活动受众',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '活动目的',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '活动描述',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '礼品名称',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '礼品描述',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '礼品价格',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '礼品图片',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '礼品送达时间',
-          key: 'gender',
-          align: 'center',
-          width: 150
-        },
-        {
-          title: '咨询电话',
-          key: 'gender',
-          align: 'center',
-          width: 150
         },
         {
           title: '客户信息Excel',
           key: 'gender',
           align: 'center',
           width: 120,
-          fixed: 'right',
           render: (h, params) => {
             return h('div', [
               h('Button', {
@@ -438,56 +462,6 @@ export default {
                   }
                 }
               }, '下载')
-            ])
-          }
-        },
-        {
-          title: '查看活动详情',
-          key: 'gender',
-          align: 'center',
-          width: 110,
-          fixed: 'right',
-          render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.interactDetail(params.row)
-                  }
-                }
-              }, '查看')
-            ])
-          }
-        },
-        {
-          title: '查看礼品送达情况',
-          key: 'gender',
-          align: 'center',
-          width: 135,
-          fixed: 'right',
-          render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.serviceDetail(params.row)
-                  }
-                }
-              }, '查看')
             ])
           }
         },
@@ -550,12 +524,14 @@ export default {
       detailCol: [],
       manageDetailCol: [
         {
-          type: 'index',
-          width: 60,
+          title: '序号',
+          width: 70,
           align: 'center',
-          fixed: 'left'
+          render: (h, params) => {
+            return h('span', params.index + (this.pageNum - 1) * this.pageSize + 1)
+          }
         },
-        {
+        /* {
           title: '店长姓名',
           key: 'name',
           align: 'center',
@@ -566,54 +542,66 @@ export default {
           key: 'name',
           align: 'center',
           width: 150
-        },
+        }, */
         {
           title: '经纪人姓名',
-          align: 'center',
-          width: 100
+          align: 'juser',
+          width: 100,
+          render: (h, params) => {
+            var name = params.row.juser === null ? '暂无' : params.row.juser
+            return h('span', name)
+          }
         },
         {
           title: '经纪人身份证号',
-          key: 'gender',
+          key: 'jidcard',
           align: 'center',
-          width: 150
+          width: 150,
+          render: (h, params) => {
+            var name = params.row.jidcard === null ? '暂无' : params.row.jidcard
+            return h('span', name)
+          }
         },
         {
           title: '客户姓名',
-          key: 'gender',
+          key: 'customName',
           align: 'center',
           width: 100
         },
         {
           title: '客户电话',
-          key: 'gender',
+          key: 'wechat',
           align: 'center',
           width: 120
         },
         {
           title: '客户身份证号',
-          key: 'gender',
+          key: 'idCard',
           align: 'center',
           width: 150
         },
         {
           title: '客户生日',
-          key: 'gender',
+          key: 'birthDate',
           align: 'center',
           width: 100
         },
         {
           title: '成交日期',
-          key: 'gender',
+          key: 'dealDate',
           align: 'center',
           width: 100
         },
         {
           title: '礼品送达情况',
-          key: 'gender',
+          key: 'status',
           align: 'center',
           width: 120,
-          fixed: 'right'
+          fixed: 'right',
+          render: (h, params) => {
+            var status = params.row.status === null ? '暂无' : params.row.status
+            return h('span', status)
+          }
         }
       ], // 管理员送达详情表头
       shoperDetailCol: [
@@ -687,10 +675,11 @@ export default {
       // 管理员
       this.dataCol = this.managerCol
       this.getManageTable(this.pageNum, this.pageSize)
-    } else if (this.role === 2) {
+    } else if (this.role === 6) {
       // 店长
+      console.log(1)
       this.dataCol = this.shoperCol
-      this.getShoperTable()
+      this.getManageTable(this.pageNum, this.pageSize)
       // 判断是不是待办事项页面过来的，showDetailModal=true查看活动详情，showArriveModal=true活动礼品送达详情
       var showDetailModal = this.$route.query.showDetailModal
       var showArriveModal = this.$route.query.showArriveModal
@@ -1108,27 +1097,24 @@ export default {
           console.log(err)
         })
     },
-    // ======================成交感恩礼送达详情
-    sendDetail () {
+    // ======================管理员、店长=成交感恩查看礼送达详情
+    seeSendDetail (id) {
       this.detailModal = true
+      // 店长和管理员，表头坐下区分，店长没有店长姓名，店长身份证号表头
       this.detailCol = this.manageDetailCol
-      const data = []
-      for (let i = 0; i < 2; i++) {
-        data.push({
-          key: i,
-          name: 'John Brown',
-          age: i + 1,
-          street: 'Lake Park',
-          building: 'C',
-          door: 2035,
-          caddress: 'Lake Street 42',
-          cname: 'SoftLake Co',
-          gender: 'M'
+      this.$axios.get(window.serverIp + '/api/gratefulactivity/getServed?activityId=' + id)
+        .then(res => {
+          if (res.status === 'success') {
+            this.detailTable = res.data
+            this.detailLoading = false
+            // this.detailTotal = false
+          } else {
+            this.$Message.error(res.message)
+          }
         })
-      }
-      this.detailTable = data
-      this.detailLoading = false
-      // this.detailTotal = false
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 页码改变
     detailPageChange (val) {
@@ -1140,25 +1126,6 @@ export default {
       this.$Message.warning('导出')
     },
     // ================店长角色========================
-    // 获取列表
-    getShoperTable () {
-      const data = []
-      for (let i = 0; i < 2; i++) {
-        data.push({
-          key: i,
-          name: 'John Brown',
-          age: i + 1,
-          street: 'Lake Park',
-          building: 'C',
-          door: 2035,
-          caddress: 'Lake Street 42',
-          cname: 'SoftLake Co',
-          gender: 'M'
-        })
-      }
-      this.dataList = data
-      this.loading = false
-    },
     // 下载客户信息
     downLoadExcel (param) {
       console.log(param)
