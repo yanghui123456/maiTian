@@ -2,7 +2,7 @@
 <template>
   <div class="container">
     <div class="mb20">
-      <Button type="info" @click="add" disabled>添加用户</Button>
+      <Button type="info" @click="add" style="display: none;">添加用户</Button>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
@@ -52,48 +52,6 @@
               <span>离职,禁用</span>
             </Radio>
           </RadioGroup>
-          </Col>
-        </Row>
-        <Row class="mt10" style="display: none;">
-          <Col span="12">
-          <span class="title">关联片区：</span>
-          <Select v-model="modalData.area" style="width: auto" @on-change="areaChange" :placement="posit" placeholder="请选择关联片区">
-            <Option v-for="item in areaList" :value="item.code" :key="item.code">{{ item.name }}</Option>
-          </Select>
-          </Col>
-          <Col span="12">
-          <span class="title">关联大区：</span>
-          <Select v-model="modalData.largeArea" style="width: auto" @on-change="largeAreaChange" :placement="posit" placeholder="请选择关联大区">
-            <Option v-for="item in largeAreaList" :value="item.code" :key="item.code">{{ item.name }}</Option>
-          </Select>
-          </Col>
-        </Row>
-        <Row class="mt10" style="display: none;">
-          <Col span="12">
-          <span class="title">关联区域：</span>
-          <Select v-model="modalData.region" style="width: auto" @on-change="regionChange" :placement="posit" placeholder="请选择关联区域">
-            <Option v-for="item in regionList" :value="item.code" :key="item.code">{{ item.name }}</Option>
-          </Select>
-          </Col>
-          <Col span="12">
-          <span class="title">关联门店：</span>
-          <Select v-model="modalData.store" style="width: auto" @on-change="storeChange" :placement="posit" placeholder="请选择关联门店">
-            <Option v-for="item in storeList" :value="item.code" :key="item.code">{{ item.name }}</Option>
-          </Select>
-          </Col>
-        </Row>
-        <Row class="mt10" style="display: none;">
-          <Col span="12">
-          <span class="title">关联店长：</span>
-          <Select v-model="modalData.shoper" style="width: auto" @on-change="shoperChange" :placement="posit" placeholder="请选择关联店长">
-            <Option v-for="item in shoperList" :value="item.code" :key="item.code">{{ item.name }}</Option>
-          </Select>
-          </Col>
-          <Col span="12">
-          <span class="title">城市公司：</span>
-          <Select v-model="modalData.city" style="width: auto" @on-change="cityChange" :placement="posit" placeholder="请选择城市公司">
-            <Option v-for="item in cityList" :value="item.code" :key="item.code">{{ item.name }}</Option>
-          </Select>
           </Col>
         </Row>
         <Row class="mt10">
@@ -173,10 +131,10 @@ export default {
             var crud = params.row.crud === 'C' ? '在职，已启用' : '离职已停用'
             var color = params.row.crud === 'C' ? 'black' : 'red'
             return h('span', {
-              style:{
+              style: {
                 color: color
               }
-            },crud)
+            }, crud)
           }
         },
         {
@@ -214,54 +172,12 @@ export default {
       modalTitle: '',
       posit: 'bottom', // 下拉框定位的位置
       roleList: [], // 成员身份
-      cityList: [
-        {
-          name: '北京',
-          code: 2222
-        }
-      ], // 城市公司
-      areaList: [
-        {
-          name: '石家庄',
-          code: 3333
-        }
-      ], // 片区
-      largeAreaList: [
-        {
-          name: '桥西区',
-          code: 4444
-        }
-      ], // 大区
-      regionList: [
-        {
-          name: '南高基',
-          code: 5555
-        }
-      ], // 区域
-      storeList: [
-        {
-          name: '南高基东口',
-          code: 6666
-        }
-      ], // 门店
-      shoperList: [
-        {
-          name: '南高基东口',
-          code: 7777
-        }
-      ], // 店长
       disabled: false, // 文本框是否禁用
       modalData: {
         role: '', // 成员身份
         name: '', // 姓名
         tel: '', // 手机号
         cardNum: '', // 身份证号
-        city: '', // 城市公司
-        area: '', // 片区
-        largeArea: '', // 大区
-        region: '', // 区域
-        store: [], // 门店
-        shoper: '', // 店长
         date: '', // 日期
         radio: '', // 启用、禁用
         moreVal: []
@@ -291,43 +207,13 @@ export default {
     },
     // 用户列表change
     pageChange (val) {
+      this.loading = true
       this.pageNum = val
       this.getUserList(val, this.pageSize)
     },
     // 成员身份改变
     roleChange (val) {
-      console.log(val)
       this.modalData.role = val
-    },
-    // 城市改变
-    cityChange (val) {
-      console.log(val)
-      this.modalData.city = val
-    },
-    // 片区改变
-    areaChange (val) {
-      console.log(val)
-      this.modalData.area = val
-    },
-    // 大区改变
-    largeAreaChange (val) {
-      console.log(val)
-      this.modalData.largeArea = val
-    },
-    // 区域改变
-    regionChange (val) {
-      console.log(val)
-      this.modalData.region = val
-    },
-    // 门店改变
-    storeChange (val) {
-      console.log(val)
-      this.modalData.store = val
-    },
-    // 店长改变
-    shoperChange (val) {
-      console.log(val)
-      this.modalData.shoper = val
     },
     // 选择日期
     dateChange (time, date) {
@@ -342,12 +228,6 @@ export default {
         name: '', // 姓名
         tel: '', // 手机号
         cardNum: '', // 身份证号
-        city: '', // 城市公司
-        area: '', // 片区
-        largeArea: '', // 大区
-        region: '', // 区域
-        store: [], // 门店
-        shoper: '', // 店长
         date: '', // 日期
         radio: '', // 启用、禁用
         moreVal: []
@@ -412,11 +292,9 @@ export default {
             time2ms = '0' + time2ms
           }
           time1 = (time2Y + '-' + time2M + '-' + time2H + ' ' + time2s + ':' + time2f + ':' + time2ms).split(' ')[0]
-          console.log(time1)
         } else {
           time1 = this.date
         }
-        console.log(this.modalData)
         var params = {
           userId: this.editUserId,
           roleId: data.role,
@@ -449,7 +327,6 @@ export default {
     },
     // 当弹窗显示隐藏状态变化时2
     checkModal (status) {
-      console.log(status)
       // true=显示；false=隐藏
       if (status === false) {
         this.clearData()
@@ -483,17 +360,21 @@ export default {
               this.moreJilian = res.data
               if (params !== '') {
                 var jlArr = []
-                var httpArr = params.user.areaclass.split(',')
-                console.log(params.user.areaclass.split(','))
+                // 判断用户的级联是否选择，未选择是null，
+                if (params.user.areaclass === null) {
+                  jlArr = []
+                } else {
+                  var httpArr = params.user.areaclass.split(',')
+                  // 将级联每一项转换成数字类型
+                  for (var i = 0; i < httpArr.length; i++) {
+                    jlArr.push(Number(httpArr[i]))
+                  }
+                }
                 this.modalData.name = params.user.realName
                 this.modalData.tel = params.user.telephone
                 this.modalData.cardNum = params.user.idCard
                 this.modalData.date = params.user.entryDate
                 this.modalData.radio = params.user.crud
-                // 将级联每一项转换成数字类型
-                for (var i = 0; i < httpArr.length; i++) {
-                  jlArr.push(Number(httpArr[i]))
-                }
                 this.modalData.moreVal = jlArr
                 this.spinShow = false
               }
@@ -543,7 +424,6 @@ export default {
             this.modalStatus(true, '编辑用户', false)
             this.getRoleAndJilian('role', '/maitian/role', 'edit', res.data)
             this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=0', 'edit', res.data)
-            console.log(res.data)
           } else {
             this.$Message.error(res.message)
           }

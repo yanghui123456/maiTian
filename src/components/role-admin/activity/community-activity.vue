@@ -32,7 +32,7 @@
         <!--报名期-->
         <Col span="3">
           <!--管理员-->
-          <Button type="info" v-if="role === 1" @click="seeBaoming(item.enrollDateStart, item.enrollDateEnd, item.communityActityId,'see')">查看</Button>
+          <Button type="info" v-if="role === 1" @click="seeBaoming(item.enrollDateStart, item.enrollDateEnd, item.communityActityId, 'see')">查看</Button>
           <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
           <Button type="info" v-if="role === 5 && item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
           <Button type="info" v-if="role === 5 && item.communityEnroll !== null" disabled>已报名</Button>
@@ -737,7 +737,7 @@ export default {
         },
         {
           title: '活动名称',
-          key: 'name',
+          key: 'communityName',
           align: 'center',
           width: 150
         },
@@ -795,7 +795,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.tableDetail(params.row)
+                    this.adminEdit(params.row.communityActityId, 'listSeeDetail')
                   }
                 }
               }, '查看详情'),
@@ -810,7 +810,8 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.tableBaoming(params.row)
+                    var param = params.row
+                    this.seeBaoming(param.enrollDateStart, param.enrollDateEnd, param.communityActityId, 'see')
                   }
                 }
               }, '查看报名+培训情况'),
@@ -824,7 +825,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.$Message.error('下载活动总结')
+                    window.open(window.serverIp + params.row.summary)
                   }
                 }
               }, '下载活动总结')
@@ -840,104 +841,52 @@ export default {
           fixed: 'left'
         },
         {
-          title: '报名审核情况',
+          title: '费用总数',
           key: 'name',
           align: 'center',
-          width: 200
-        },
-        {
-          title: '报名未通过原因',
-          key: 'name',
-          align: 'center',
-          width: 200
-        },
-        {
-          title: '培训审核情况',
-          align: 'center',
-          width: 200
-        },
-        {
-          title: '培训审核未通过原因',
-          key: 'gender',
-          align: 'center',
-          width: 200
-        },
-        {
-          title: '费用总计',
-          key: 'gender',
-          align: 'center',
-          width: 200
+          width: 100
         },
         {
           title: '活动名称',
-          key: 'gender',
+          key: 'communityName',
           align: 'center',
-          width: 200
+          width: 150
         },
         {
           title: '活动主题',
-          key: 'gender',
+          key: 'theme',
           align: 'center',
-          width: 200
+          width: 100
         },
         {
           title: '活动描述',
-          key: 'gender',
+          key: 'activityDetail',
           align: 'center',
-          width: 200
+          width: 150
         },
         {
-          title: '适合人群',
-          key: 'gender',
-          align: 'center'
-        },
-        {
-          title: '报名时间',
-          key: 'gender',
+          title: '适合人群/适合的社区特点',
+          key: 'characteristic',
           align: 'center',
-          width: 200
-        },
-        {
-          title: '审核时间',
-          key: 'gender',
-          align: 'center',
-          width: 200
-        },
-        {
-          title: '培训时间',
-          key: 'gender',
-          align: 'center',
-          width: 200
-        },
-        {
-          title: '宣传时间',
-          key: 'gender',
-          align: 'center',
-          width: 200
+          width: 180
         },
         {
           title: '执行时间',
-          key: 'gender',
+          key: 'executeDateStart',
           align: 'center',
-          width: 200
+          width: 150
         },
         {
-          title: '礼品名称',
-          key: 'gender',
+          title: '礼品最晚送达时间',
+          key: 'lastReceiveTime',
           align: 'center',
-          width: 200
+          width: 150
         },
         {
-          title: '礼品描述',
-          key: 'gender',
+          title: '确认礼品签收时间',
+          key: 'trainDate',
           align: 'center',
-          width: 200
-        },
-        {
-          title: '咨询电话',
-          key: 'gender',
-          align: 'center',
-          width: 200
+          width: 150
         },
         {
           title: '操作',
@@ -957,9 +906,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.modalStatus(true, '社群活动详情', true)
-                    this.activityDis = true
-                    this.seeDetailType = 2
+                    this.adminEdit(params.row.communityActityId, 'listSeeDetail')
                   }
                 }
               }, '查看详情')
@@ -1589,14 +1536,14 @@ export default {
       // 正在执行的活动
       this.getImplementActivit(this.manageImplementActivityUrl)
     } else if (this.role === 5) {
-      // 区域经理
+      // 区域经理 (目前区经的表头和管理员一样)
       this.dataCol = this.areaManagerCol
       // 历史社群活动
       this.getHistoryActivitieTable(this.manageHistoryActivityUrl)
       // 正在执行的活动
       this.getImplementActivit(this.manageImplementActivityUrl)
     } else if (this.role === 6) {
-      // 店长
+      // 店长(目前店长的表头和管理员一样)
       this.dataCol = this.areaManagerCol
       // 历史社群活动
       this.getHistoryActivitieTable(this.manageHistoryActivityUrl)
@@ -1806,44 +1753,6 @@ export default {
       this.pageNum = val
       // this.getList(val, 10)
     },
-    // 管理员-查看详情 table
-    tableDetail (param) {
-      var editId = param.communityActityId
-      this.modalStatus(true, '查看详情', true)
-      this.activityDis = true // 全部禁用
-      this.isAdd = '' // 编辑
-      this.$axios.get(window.serverIp + '/api/community/getCommunityById?activityId=' + editId)
-        .then(res => {
-          if (res.status === 'success') {
-            this.deletModal = false
-            console.log(res)
-          } else {
-            this.$Message.error(res.message)
-          }
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
-    // table查看报名 + 培训情况  无分页
-    tableBaoming (param) {
-      var id = param.communityActityId
-      this.examineCol = this.bmAndshCol
-      this.$axios.get(window.serverIp + '/api/communityenroll/getActivityEnrollOfCommunity?communityId=' + id)
-        .then(res => {
-          if (res.status === 'success') {
-            this.examineLoading = false
-            this.bmAndShStatus(true, '查看报名、培训情况', 4)
-            this.examineList = res.data
-          } else {
-            this.$Message.error(res.message)
-          }
-        })
-        .catch(err => {
-          console.log(err)
-        })
-      // this.examineTotal = 20
-    },
     // ==========================================管理员
     // 判断当前时间是否在一段时间内
     checkTime (start, end) {
@@ -1859,25 +1768,12 @@ export default {
     // 进度条-管理员=编辑
     /*
     * role: manager-管理员角色编辑活动，area-区域经理角色查看活动（区经查看不可以上传图片）;dianzhang-店长角色查看活动详情
+    * listSeeDetail-管理员、区经、店长 在历史社群活动查看详情
     * */
     adminEdit (id, role) {
       this.$axios.get(window.serverIp + '/api/community/getCommunityById?activityId=' + id)
         .then(res => {
           if (res.status === 'success') {
-            console.log(res.data)
-            if (role === 'manager') {
-              this.modalStatus(true, '编辑社群活动', false)
-              this.activityDis = false // 可以填写
-              this.isAdd = false // 编辑
-            } else if (role === 'area') {
-              this.modalStatus(true, '社群活动详情', true)
-              this.activityDis = true
-              this.seeDetailType = 1
-            } else if (role === 'dianzhang') {
-              this.modalStatus(true, '社群活动详情', true)
-              this.activityDis = true
-              this.seeDetailType = 2
-            }
             this.managerEditId = id
             var act = res.data.communityActivity // 活动信息
             var gifts = res.data.gifts // 礼品列表
@@ -1937,8 +1833,6 @@ export default {
             modalData.tel = act.consultTel // 咨询电话
             modalData.serviceTime = act.lastReceiveTime // 礼品最晚送达时间
             modalData.signTime = act.lastSignTime // 礼品最晚签收时间
-            console.log(modalData.serviceTime)
-            console.log(modalData.signTime)
             // 把后台传过来的礼物列表数据整理一下
             for (var i = 0; i < gifts.length; i++) {
               // 每个礼物添加id
@@ -2005,7 +1899,23 @@ export default {
               }
             }
             modalData.giftList = gifts // 礼品列表
-            console.log(gifts)
+            if (role === 'manager') {
+              this.modalStatus(true, '编辑社群活动', false)
+              this.activityDis = false // 可以填写
+              this.isAdd = false // 编辑
+            } else if (role === 'area') {
+              this.modalStatus(true, '社群活动详情', true)
+              this.activityDis = true
+              this.seeDetailType = 1
+            } else if (role === 'dianzhang') {
+              this.modalStatus(true, '社群活动详情', true)
+              this.activityDis = true
+              this.seeDetailType = 2
+            } else if (role === 'listSeeDetail') {
+              this.modalStatus(true, '查看详情', true)
+              this.activityDis = true // 全部禁用
+              this.isAdd = ''
+            }
           } else {
             this.$Message.error(res.message)
           }
@@ -2020,7 +1930,7 @@ export default {
       * start:报名审核期开始时间
       * end:报名审核期结束时间
       * id:
-      * type: 区分是报名期查看see；还是报名期审核examine; 培训期审核trainAudit; 宣传期-下单情况xiadan
+      * type: 区分是报名期查看see(不对时间做审核)；还是报名期审核examine; 培训期审核trainAudit; 宣传期-下单情况xiadan
       * 报名期审核的时候判断当前的时间是否在审核期内
       * */
       this.mtCommunityActityId = id // 把活动id存起来，报名列表审核的时候需要用到
@@ -2052,7 +1962,6 @@ export default {
         this.$axios.get(window.serverIp + '/api/communitygiftorder/getCommunityGiftOrders?activityId=' + id)
           .then(res => {
             if (res.status === 'success') {
-              console.log(res.data)
               this.examineLoading = false
               this.bmAndShStatus(true, '下单情况', 3)
               this.examineList = res.data
@@ -2070,7 +1979,6 @@ export default {
       this.$axios.get(window.serverIp + url + id)
         .then(res => {
           if (res.status === 'success') {
-            console.log(res.data)
             this.examineLoading = false
             if (type === 'see') {
               this.bmAndShStatus(true, '查看报名列表', 1)
@@ -2146,7 +2054,6 @@ export default {
     },
     // 报名期审核 + 培训期审核===审核通过
     baomingExamine (params) {
-      console.log(params)
       var param = params
       if (this.shAndbmType === 2) {
         // 报名期审核通过
@@ -2192,7 +2099,6 @@ export default {
     },
     // 管理员-报名期审核=== 审核不通过
     baomingExamineNo (param) {
-      console.log(param)
       if (this.shAndbmType === 2) {
         // 报名期审核
         this.auditFailedModal = true
@@ -2214,62 +2120,44 @@ export default {
     },
     // 报名时间
     enrollChange (time, date) {
-      console.log(time)
       this.modalData.enrollTimeList = time
-      console.log('报名开始')
-      console.log(this.modalData.enrollTime)
     },
     // 报名审核起止时间
     enrollShenHeChange (time, date) {
       this.modalData.enrollShenHeTimeList = time
-      console.log('报名审核起止时间')
-      console.log(this.modalData.enrollShenHeTimeList)
     },
     // 培训起止时间
     trainChange (time, date) {
       this.modalData.trainTimeList = time
-      console.log('培训起止时间')
-      console.log(this.modalData.trainTimeList)
     },
     // 培训审核起止时间
     trainShenHeChange (time, date) {
       this.modalData.trainShenHeTimeList = time
-      console.log('培训审核起止时间')
-      console.log(this.modalData.trainShenHeTimeList)
     },
     // 宣传起止时间
     xuanChuanChange (time, date) {
       this.modalData.xuanChuanTimeList = time
-      console.log('宣传起止时间')
-      console.log(this.modalData.xuanChuanTimeList)
     },
     // 执行起止时间
     implementChange (time, date) {
       this.modalData.implementTimeList = time
-      console.log(this.modalData.implementTimeList)
     },
     // 礼品最晚送达时间
     serviceChange (time, date) {
       this.modalData.serviceTime = time
       this.changeserviceTime = true
-      console.log(this.modalData.serviceTime)
     },
     // 礼品最晚签收时间
     signChange (time, date) {
       this.modalData.signTime = time
       this.changeSignTime = true
-      console.log(this.modalData.signTime)
     },
     // 管理员获取上传活动总结的活动id
     getActiveId (id) {
-      console.log(id)
       this.managerUploadId = id
     },
     // 管理员=上传活动总结
     docUpSuccess (response, file, fileList) {
-      console.log(response)
-      console.log(file)
-      console.log(fileList)
       if (response.status === 'success') {
         // 更新接口
         this.$axios.put(window.serverIp + '/api/community/updateSummery', {
@@ -2294,9 +2182,6 @@ export default {
     },
     // 图片上传成功时
     uopload1 (response, file, fileList) {
-      console.log(response)
-      console.log(file)
-      console.log(fileList)
       var data = response.data
       if (response.status === 'success') {
         this.$Message.success('图片上传成功')
@@ -2306,9 +2191,6 @@ export default {
       }
     },
     uopload2 (response, file, fileList) {
-      console.log(response)
-      console.log(file)
-      console.log(fileList)
       var data = response.data
       if (response.status === 'success') {
         this.$Message.success('图片上传成功')
@@ -2318,9 +2200,6 @@ export default {
       }
     },
     uopload3 (response, file, fileList) {
-      console.log(response)
-      console.log(file)
-      console.log(fileList)
       var data = response.data
       if (response.status === 'success') {
         this.$Message.success('图片上传成功')
@@ -2330,9 +2209,6 @@ export default {
       }
     },
     uopload4 (response, file, fileList) {
-      console.log(response)
-      console.log(file)
-      console.log(fileList)
       var data = response.data
       if (response.status === 'success') {
         this.$Message.success('图片上传成功')
@@ -2342,15 +2218,12 @@ export default {
       }
     },
     handleSuccess (response, file, fileList) {
-      console.log(response.data.filepath)
       var url = response.data.filepath
       if (response.status === 'success') {
         this.$Message.success('图片上传成功')
-        console.log('应该上传的项是==' + this.moreUploadId)
         // imgList
         var id = this.moreUploadId
         var data = this.modalData.giftList
-        console.log(this.modalData.giftList.imgList)
         for (var i = 0; i < data.length; i++) {
           if (data[i].id === id) {
             var length = data[i].imgList.length
@@ -2368,16 +2241,13 @@ export default {
             } else if (length === 3) {
               data[i].giftFour = url
             }
-            console.log(length)
           }
         }
-        console.log(this.modalData.giftList)
       } else {
         this.$Message.error(response.message)
       }
     },
     clickUpload (param) {
-      console.log('点击的是===' + param.id)
       // 获取点击项的id, 根据id给上传成功的图片添加到某一项
       this.moreUploadId = param.id
     },
@@ -2398,14 +2268,10 @@ export default {
     },
     // 文件格式验证失败
     handleFormatError (file, fileList) {
-      console.log(file)
-      console.log(fileList)
       this.$Message.error('文件格式校验失败')
     },
     // 文件超出指定大小
     handleMaxSize (file, fileList) {
-      console.log(file)
-      console.log(fileList)
       this.$Message.error('文件超出指定大小')
     },
     // 发布社群活动
@@ -2419,7 +2285,6 @@ export default {
     addGift () {
       // 往modalData中的giftList中追加一项空数据
       var length = this.modalData.giftList.length
-      console.log(length)
       this.modalData.giftList.push({
         id: length + 1, // 自定义的id
         giftName: '', // 礼品名称
@@ -2438,9 +2303,7 @@ export default {
     },
     // 删除添加的礼品
     deletItem (id) {
-      console.log(id)
       this.modalData.giftList.splice(id - 1, 1)
-      console.log(this.modalData.giftList)
     },
     // 保存
     save () {
@@ -2555,7 +2418,6 @@ export default {
             }
           }
           // 新增
-          console.log(this.modalData)
           var data = this.modalData
           var activity = {} // 活动
           var giftList = data.giftList // 礼品
@@ -2597,8 +2459,6 @@ export default {
           activity.consultTel = data.tel // 咨询方式
           activity.lastReceiveTime = data.serviceTime // 礼品最晚送达时间==绑值
           activity.lastSignTime = data.signTime // 礼品最晚签收时间==绑值
-          console.log(activity)
-          console.log(giftList)
           if (this.isAdd) {
             this.$axios.post(window.serverIp + '/api/community', {
               communityActivity: activity,
@@ -2621,7 +2481,6 @@ export default {
               })
           } else {
             this.$Message.warning('编辑')
-            console.log(activity)
             // 判断最晚送达和最晚签收时间 是否change过没有change过走时间格式化，change过就不用走
             if (this.changeserviceTime === false) {
               var time1 = activity.lastReceiveTime
@@ -2647,7 +2506,6 @@ export default {
                 time2ms = '0' + time2ms
               }
               time1 = time2Y + '-' + time2M + '-' + time2H + ' ' + time2s + ':' + time2f + ':' + time2ms
-              console.log(time1)
               activity.lastReceiveTime = time1
             } else {
 
@@ -2676,11 +2534,8 @@ export default {
                 time3ms = '0' + time3ms
               }
               time2 = time3Y + '-' + time3M + '-' + time3H + ' ' + time3s + ':' + time3f + ':' + time3ms
-              console.log(time2)
               activity.lastSignTime = time2
             }
-            console.log(activity)
-            console.log(giftList)
             activity.communityActityId = this.managerEditId
             this.$axios.put(window.serverIp + '/api/community', {
               communityActivity: activity,
@@ -2712,7 +2567,6 @@ export default {
     },
     // 定制礼品进步器
     giftStepChange (val) {
-      console.log(val)
       // 重新计算礼品总价
       var data = this.signModalData.customgiftList
       var totalPrice = ''
@@ -2720,7 +2574,6 @@ export default {
         var steps = data[j].step // 计步器
         var giftPrice = data[j].giftPrice // 单价
         totalPrice = Number(totalPrice) + (giftPrice * steps)
-        console.log(totalPrice)
       }
       this.signModalData.giftTotal = totalPrice
       // 费用总价
@@ -2749,7 +2602,6 @@ export default {
           // 管理员-报名期-审核不通过
           this.$Message.error('报名审核不通过')
           this.auditFailedModal = false
-          console.log(this.mtBaomingShenheExzaminNo)
           var data = this.mtBaomingShenheExzaminNo
           data.enrollState = 2
           data.enrollFail = this.failedReason
@@ -2768,7 +2620,6 @@ export default {
     // 弹窗页码
     examinePageChange (val) {
       // 根据shAndbmType判断是 报名弹窗还是审核弹窗； 1-报名；2-审核
-      console.log(this.shAndbmType)
       this.examinePageNum = val
       // this.getList(val, 10)
       if (this.shAndbmType === 1) {
@@ -2829,7 +2680,6 @@ export default {
     },
     // 报名-区域下拉
     regionPickerChange (val) {
-      console.log(val)
       this.enrollData.region = val
     },
     // 获取小区列表
@@ -2934,7 +2784,6 @@ export default {
       } else {
         this.enrollData.social = []
       }
-      console.log(this.enrollData.social)
     },
     // 选择多选框每一项
     checkAllGroupChange (data) {
@@ -3070,17 +2919,6 @@ export default {
         this.$Message.error('请输入联系电话')
         return false
       } else {
-        console.log('活动id' + activity.communityActityId)
-        console.log('用户id' + localStorage.getItem('userId')) // 登录时的userId
-        console.log('礼品总价' + xiadanDetail.giftTotal)
-        console.log('预计总价' + xiadanDetail.total)
-        console.log('其他费用' + xiadanDetail.otherMoney)
-        console.log('收件人地址' + xiadanDetail.address)
-        console.log('收件人姓名' + xiadanDetail.person)
-        console.log('收件人手机' + xiadanDetail.tel)
-        console.log('礼品最晚签收时间' + xiadanDetail.signTime)
-        console.log('礼品列表==')
-        console.log(arr)
         this.$axios.post(window.serverIp + '/api/communitygiftorder/', {
           community_actity_id: activity.communityActityId,
           userId: localStorage.getItem('userId'),
