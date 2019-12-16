@@ -1161,7 +1161,7 @@ export default {
       this.$axios.put(window.serverIp + '/api/gratefulcustom/updateGratefulCustomState', {
         gratefulActivityId: param.gratefulActivityId,
         customId: param.customIds,
-        status: param.customStatus,
+        status: param.customStatus
       })
         .then(res => {
           if (res.status === 'success') {
