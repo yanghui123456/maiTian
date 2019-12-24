@@ -4,10 +4,10 @@
     <!--发布社群活动==只对管理员可见-->
     <Button type="info" @click="publicActivity" v-if="role === 1">发布社群活动</Button>
     <p class="pageTitle">正在执行的社群活动</p>
-    <!--区域经理可见-->
-    <p  v-if="role === 5 || role === 6" class="mb10">本次活动礼品预算上限XX元!</p>
     <!--社区任务进度-->
     <div v-for="(item, index) in ImplementActivityList" :key="index" class="mt20">
+      <!--区域经理可见-->
+      <p  v-if="role === 5 || role === 6" class="mb10 fb">本次活动礼品预算上限{{item.giftCost}}元!</p>
       <Steps :current="0">
         <Step title="发起" :content="item.createDate"></Step>
         <Step title="报名期" :content="item.enrollDateStart + '~' + item.enrollDateEnd"></Step>
@@ -36,8 +36,9 @@
           <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
           <Button type="info" v-if="role === 5 && item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
           <Button type="info" v-if="role === 5 && item.communityEnroll !== null" disabled>已报名</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
+          <!--区经：当管理员报名审核通过后，不显示撤销报名和修改明明按钮。否则显示-->
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
           <!--店长:区经是否报名-->
          <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
          <Button type="info" v-if="role === 6 && item.communityEnroll !== null" disabled>区域经理已报名</Button>
@@ -48,7 +49,7 @@
           <Button type="info" v-if="role === 1" @click="seeBaoming(item.auditDate, item.auditDateEnd, item.communityActityId, 'examine')">审核</Button>
           <!--区域经理：根据审核是否通过展示不同的按钮-->
           <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1">审核通过</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollFail !== null" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 2" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
           <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 0">管理员暂未审核</Button>
         </Col>
         <!--报名审核期（店长）-->
@@ -77,7 +78,7 @@
           <Button type="info" @click="seeBaoming(item.trainAuditStart, item.trainAuditEnd, item.communityActityId, 'trainAudit')"  v-if="role === 1">审核</Button>
           <!--区域经理-->
            <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '1'">审核通过</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainFail !== null" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
+          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === 2" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
           <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '0'">管理员暂未审核</Button>
           <!--店长=培训审核通过后店长才可以下单-->
           <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
@@ -166,14 +167,14 @@
           <Row>
             <Col span="24">
             <span class="title">预估非礼品费用：</span>
-            <Input type="number" placeholder="请输入预估非礼品费用" style="width: auto" :disabled="disabled" v-model="modalData.cost"/>
+            <Input placeholder="请输入预估非礼品费用" style="width: auto" :disabled="disabled" v-model="modalData.cost"/>
             <span>元</span>
             </Col>
           </Row>
           <Row>
             <Col span="24">
             <span class="title">礼品预算上限：</span>
-            <Input type="number" placeholder="请输入礼品预算上线" style="width: auto" :disabled="disabled" v-model="modalData.budgetCap"/>
+            <Input placeholder="请输入礼品预算上线" style="width: auto" :disabled="disabled" v-model="modalData.budgetCap"/>
             <span>元</span>
             </Col>
           </Row>
@@ -206,7 +207,7 @@
           <Row>
             <Col span="24">
             <span class="title">报名起止时间：</span>
-            <DatePicker :editable="false" :disabled="disabled" type="datetimerange" placeholder="请选择报名起止时间" v-model="modalData.enrollTime" @on-change="enrollChange" style="width: 250px"></DatePicker>
+            <DatePicker :editable="false" :disabled="disabled" type="datetimerange" placeholder="请选择报名起止时间" v-model="modalData.enrollTime" @on-change="enrollChange" style="width: 300px"></DatePicker>
             </Col>
           </Row>
           <Row>
@@ -369,7 +370,7 @@
           <Row>
             <Col span="24">
             <span class="title">礼品价格：</span>
-            <Input placeholder="请输入礼品价格" style="width: auto" :disabled="disabled" v-model="item.giftPrice" type="number"/>
+            <Input placeholder="请输入礼品价格" style="width: auto" :disabled="disabled" v-model="item.giftPrice"/>
             </Col>
           </Row>
           <Row>
@@ -411,6 +412,7 @@
             <!--每一组可以上传你多张-->
             <div v-for="(items, index) in item.imgList" :key="index" class="oneUploadImg fl">
               <img :src="items.src" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.length > 0">
+              <img src="../../../assets/Shape.png" alt="删除按钮" class="deletedImg" @click="deletedImg(item,items.id)">
             </div>
             <!--<div class="oneUploadImg fl">-->
               <!--<img :src="item.imgList.giftTop" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftTop !== ''">-->
@@ -507,7 +509,7 @@
         <!--选择小区-->
         <div class="borderBottom">
           <p class="modalTitle">
-            选择小区
+            选择小区分期
             <Checkbox
             :indeterminate="indeterminate"
             :value="checkAll"
@@ -518,10 +520,10 @@
             <Col span="24">
             <CheckboxGroup v-model="enrollData.social" @on-change="checkAllGroupChange">
               <Checkbox :label="item.regionId" v-for="item in socialList" :key="item.regionId">
-                <span>{{item.regionName}}</span>
+                <span>{{item.period}}</span>
               </Checkbox>
             </CheckboxGroup>
-            {{enrollData.social}}
+            <!--{{enrollData.social}}-->
             </Col>
           </Row>
         </div>
@@ -603,6 +605,10 @@
           <p class="modalTitle">定制礼品</p>
           <div class="paddLR">
             <Row class="borderBottom" v-for="(item, index) in signModalData.customgiftList" :key="index">
+              <!--店长角色-活动礼品下单才会显示-->
+              <Col span="2" style="margin-top:24px;">
+              <Checkbox v-model="item.check"></Checkbox>
+              </Col>
               <Col span="2">
               <img :src="imgHttp + item.giftTop" alt="" style="display:inline-block;width:60px;height:60px;">
               </Col>
@@ -643,9 +649,9 @@
         <div class="borderBottom">
           <p class="modalTitle">快递信息</p>
           <Row>
-            <Col span="12">
+            <Col span="24">
             <span class="title">快递地址：</span>
-            <Input placeholder="请输入快递地址" style="width: auto" :disabled="signModalData.activityXiadanInput" v-model="signModalData.address"/>
+            <Input placeholder="请输入快递地址" style="width: 500px" :disabled="signModalData.activityXiadanInput" v-model="signModalData.address"/>
             </Col>
           </Row>
           <Row>
@@ -709,9 +715,10 @@
 export default {
   data () {
     return {
+      single: false,
       imgHttp: '',
       upLoadUrl: '',
-      manageHistoryActivityUrl: '/api/community/getAllCommunity', // 管理员查询历史活动列表
+      manageHistoryActivityUrl: '/api/community/getCommunityOfHistory', // 管理员查询历史活动列表
       manageImplementActivityUrl: '/api/community/getCommunityOfUnSummary', // 管理员正在执行的活动
       ImplementActivityList: [], // 正在执行的社区活动
       role: '', // 角色 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
@@ -986,10 +993,10 @@ export default {
       enrollActivityId: '', // 活动id
       cnaEnroll: null, // 能否进行报名字段  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
       enrollData: { // 报名弹层数据
-        city: '北京', // 城市公司
-        area: '片区A', // 片区
-        largeArea: '大区A', // 大区
-        region: '望京', // 区域
+        city: '', // 城市公司
+        area: '', // 片区
+        largeArea: '', // 大区
+        region: '', // 区域
         social: []
       },
       posit: 'bottom', // 下拉框定位的位置
@@ -1331,10 +1338,10 @@ export default {
           width: 100
         },
         {
-          title: '报名小区',
+          title: '报名小区分期',
           key: 'regions',
           align: 'center',
-          width: 100
+          width: 140
         },
         {
           title: '操作',
@@ -1505,6 +1512,7 @@ export default {
         signTime: '', // =========礼品最晚签收时间（店长角色-活动下单可见）
         customgiftList: [ // 定制礼品
           {
+            check: false, // 该礼品是否选中
             giftName: '', // 礼品名称
             giftDetail: '', // 礼品描述
             giftPrice: '', // 礼品金额
@@ -1645,10 +1653,10 @@ export default {
     enrollModalChange (status) {
       if (!status) {
         this.enrollData = {
-          city: '北京', // 城市公司
-          area: '片区A', // 片区
-          largeArea: '大区A', // 大区
-          region: '望京', // 区域
+          city: '', // 城市公司
+          area: '', // 片区
+          largeArea: '', // 大区
+          region: '', // 区域
           social: []
         }
         this.regionList = [] // 报名弹窗-区域列表
@@ -1685,6 +1693,7 @@ export default {
           signTime: '', // =========礼品最晚签收时间（店长角色-活动下单可见）
           customgiftList: [ // 定制礼品
             {
+              check: false, // 该礼品是否选中
               giftName: '', // 礼品名称
               giftDetail: '', // 礼品描述
               giftPrice: '', // 礼品金额
@@ -2217,12 +2226,55 @@ export default {
         this.$Message.error(response.message)
       }
     },
+    // 删除礼品图片
+    deletedImg (item, id) {
+      // 从礼品列表的第item.id项，删除某一个图片数组为id的项
+      var data = this.modalData.giftList
+      console.log(data)
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].id === item.id) {
+          // 拿到删除数组的id
+          for (var j = 0; j < data[i].imgList.length; j++) {
+            if (data[i].imgList[j].id === id) {
+              data[i].imgList.splice(j, 1)
+              var length = data[i].imgList.length
+              if (length === 0) {
+                data[i].giftTop = ''
+                data[i].giftTwo = ''
+                data[i].giftThree = ''
+                data[i].giftFour = ''
+              } else if (length === 1) {
+                data[i].giftTwo = ''
+                data[i].giftTop = data[i].imgList[0].src.split(window.serverIp)[1]
+                data[i].giftThree = ''
+                data[i].giftFour = ''
+              } else if (length === 2) {
+                data[i].giftTop = data[i].imgList[0].src.split(window.serverIp)[1]
+                data[i].giftTwo = data[i].imgList[1].src.split(window.serverIp)[1]
+                data[i].giftThree = ''
+                data[i].giftFour = ''
+              } else if (length === 3) {
+                data[i].giftTop = data[i].imgList[0].src.split(window.serverIp)[1]
+                data[i].giftTwo = data[i].imgList[1].src.split(window.serverIp)[1]
+                data[i].giftThree = data[i].imgList[2].src.split(window.serverIp)[1]
+                data[i].giftFour = ''
+              } else if (length === 4) {
+                data[i].giftTop = data[i].imgList[0].src.split(window.serverIp)[1]
+                data[i].giftTwo = data[i].imgList[1].src.split(window.serverIp)[1]
+                data[i].giftThree = data[i].imgList[2].src.split(window.serverIp)[1]
+                data[i].giftFour = data[i].imgList[3].src.split(window.serverIp)[1]
+              }
+            }
+          }
+        }
+      }
+    },
     handleSuccess (response, file, fileList) {
       var url = response.data.filepath
       if (response.status === 'success') {
         this.$Message.success('图片上传成功')
         // imgList
-        var id = this.moreUploadId
+        var id = this.moreUploadId // 上传图片的id
         var data = this.modalData.giftList
         for (var i = 0; i < data.length; i++) {
           if (data[i].id === id) {
@@ -2249,7 +2301,9 @@ export default {
     },
     clickUpload (param) {
       // 获取点击项的id, 根据id给上传成功的图片添加到某一项
+      console.log(param)
       this.moreUploadId = param.id
+      console.log(this.moreUploadId)
     },
     // 图片上传之前
     beforUpload (file) {
@@ -2324,11 +2378,11 @@ export default {
       } else if (datas.costExplain === '') {
         this.$Message.error('请输入其他费用说明')
         return false
-      } else if (datas.cost === '') {
-        this.$Message.error('请输入预估非礼品费用')
+      } else if (datas.cost === '' || isNaN(datas.cost) === true || Number(datas.cost) < 0) { // 判断是不是大于等于0
+        this.$Message.error('请输入正确的预估非礼品费用')
         return false
-      } else if (datas.budgetCap === '') {
-        this.$Message.error('请输入礼品预算上限')
+      } else if (datas.budgetCap === '' || isNaN(datas.budgetCap) === true || Number(datas.budgetCap) < 0) {
+        this.$Message.error('请输入正确的礼品预算上限')
         return false
       } else if (datas.trait === '') {
         this.$Message.error('请选择适合的社区特点')
@@ -2396,19 +2450,19 @@ export default {
             } else if (gifts[i].giftDetail === '') {
               this.$Message.error('请输入礼品描述')
               return false
-            } else if (gifts[i].giftPrice === '') {
-              this.$Message.error('礼品价格')
+            } else if (gifts[i].giftPrice === '' || isNaN(gifts[i].giftPrice) === true || Number(gifts[i].giftPrice) < 0) {
+              this.$Message.error('请输入正确的礼品价格')
               return false
             } else if (gifts[i].giftLeast === '' || gifts[i].giftMost === '') {
               this.$Message.error('礼品数量不可为空')
               return false
-            } else if (Number(gifts[i].giftLeast) >= Number(gifts[i].giftMost)) {
+            } else if (Number(gifts[i].giftLeast) >= Number(gifts[i].giftMost) || Number(gifts[i].giftLeast) < 0 || Number(gifts[i].giftMost) < 0) {
               this.$Message.error('礼品数量输入有误')
               return false
-            } else if (Number(gifts[i].step) < Number(gifts[i].giftLeast) || Number(gifts[i].step) > Number(gifts[i].giftMost)) {
+            } else if (Number(gifts[i].step) < Number(gifts[i].giftLeast) || Number(gifts[i].step) > Number(gifts[i].giftMost) || Number(gifts[i].step) < 0) {
               this.$Message.error('阶梯值输入有误')
               return false
-            } else if (Number(gifts[i].reasonable) < Number(gifts[i].giftLeast) || Number(gifts[i].reasonable) > Number(gifts[i].giftMost)) {
+            } else if (Number(gifts[i].reasonable) < Number(gifts[i].giftLeast) || Number(gifts[i].reasonable) > Number(gifts[i].giftMost) || Number(gifts[i].reasonable) < 0) {
               // 礼品数量
               this.$Message.error('合理礼品数量输入有误')
               return false
@@ -2421,6 +2475,8 @@ export default {
           var data = this.modalData
           var activity = {} // 活动
           var giftList = data.giftList // 礼品
+          console.log('新增')
+          console.log(giftList)
           activity.communityName = data.activName // 活动名称
           activity.theme = data.theme // 活动主题
           activity.activityDetail = data.description // 活动描述
@@ -2480,7 +2536,6 @@ export default {
                 console.log(err)
               })
           } else {
-            this.$Message.warning('编辑')
             // 判断最晚送达和最晚签收时间 是否change过没有change过走时间格式化，change过就不用走
             if (this.changeserviceTime === false) {
               var time1 = activity.lastReceiveTime
@@ -2666,10 +2721,15 @@ export default {
     },
     // 获取社区活动报名-区域下拉列表
     getAreaList () {
-      this.$axios.get(window.serverIp + '/api/department')
+      this.$axios.get(window.serverIp + '/api/department/getFiveLevel')
         .then(res => {
           if (res.status === 'success') {
-            this.regionList = res.data
+            // this.regionList = res.data
+            var data = res.data
+            this.enrollData.city = data.city
+            this.enrollData.area = data.hugeArea
+            this.enrollData.largeArea = data.largeArea
+            this.enrollData.region = data.area
           } else {
             this.$Message.error(res.message)
           }
@@ -2851,22 +2911,32 @@ export default {
             this.signModalData.otherMoney = item.giftCost
             // 礼品最晚签收时间
             this.signModalData.signTime = item.lastSignTime
-            // 礼品列表
-            this.signModalData.customgiftList = res.data
+            // 礼品列表,把每一项中添加check字段为false
+            console.log('定制礼品列表')
+            console.log(res.data)
+            var httpGiftList = res.data
+            for (var a = 0; a < httpGiftList.length; a++) {
+              httpGiftList[a].check = false
+            }
+            console.log(httpGiftList)
+            this.signModalData.customgiftList = httpGiftList
             // 往每个item中追加一个步进的数组
+            var totalPrice = '' // 总价
             for (var j = 0; j < this.signModalData.customgiftList.length; j++) {
               var end = this.signModalData.customgiftList[j].giftMost // 最大数量
               var steps = this.signModalData.customgiftList[j].step // 计步器
               var arr = [] // 自己生成的计步器数组
               var giftPrice = this.signModalData.customgiftList[j].giftPrice // 单价
-              var totalPrice = '' // 总价
+              var totalItem = '' // 每次循环的item
               for (var i = 0; i < Math.floor(Number(end) / Number(steps)); i++) {
                 arr.push({
                   name: (i + 1) * steps,
                   code: i
                 })
-                totalPrice = giftPrice * steps
+                totalItem = giftPrice * steps
               }
+              totalPrice = Number(totalPrice) + Number(totalItem)
+              console.log('礼品总价' + totalPrice)
               this.signModalData.customgiftList[j].numList = arr
               // 礼品总价 = 每一个礼品的个数（计步器） * 礼品价格
               this.signModalData.giftTotal = totalPrice
@@ -2881,12 +2951,12 @@ export default {
           console.log(err)
         })
       // 获取大区，区域，门店，店组
-      this.$axios.get(window.serverIp + '/api/department/')
+      this.$axios.get(window.serverIp + '/api/department')
         .then(res => {
           if (res.status === 'success') {
             var data = res.data
             this.signModalData.bigArea = data.part // 大区
-            this.signModalData.region = data.last // 区域
+            this.signModalData.region = data.largeRegion // 区域
             this.signModalData.dianzu = data.region // 店组
             // this.signModalData.mendian = data.city 门店先隐藏
           } else {
@@ -2899,17 +2969,25 @@ export default {
     },
     // 店长-活动礼品下单
     shoperYes () {
-      var activity = this.xiadanActivity // 整调活动的详细信息
+      var activity = this.xiadanActivity // 整条活动的详细信息
       var xiadanDetail = this.signModalData // 下单弹窗里边绑定的信息
-      var xiadanGiftList = this.signModalData.customgiftList // 下单的礼品列表
-      var arr = []
-      for (var i = 0; i < xiadanGiftList.length; i++) {
-        arr.push({
-          communityGiftId: xiadanGiftList[i].communityGiftId,
-          giftNumber: xiadanGiftList[i].step
-        })
+      var checkTrueList = [] // 礼品定制选择check为true的列表
+      var arr = [] // 传递给后台的列表
+      var xiadanGiftList = this.signModalData.customgiftList // 下单的礼品列表只下单选中的check：true的礼品
+      for (var a = 0; a < xiadanGiftList.length; a++) {
+        if (xiadanGiftList[a].check === true) {
+          checkTrueList.push(xiadanGiftList[a])
+          arr.push({
+            communityGiftId: xiadanGiftList[a].communityGiftId,
+            giftNumber: xiadanGiftList[a].step
+          })
+        }
       }
-      if (xiadanDetail.address === '') {
+      // 判断是否玄选中某一项礼品，否则不可下单
+      if (checkTrueList.length === 0) {
+        this.$Message.error('请选择礼品定制')
+        return false
+      } else if (xiadanDetail.address === '') {
         this.$Message.error('请输入地址')
         return false
       } else if (xiadanDetail.person === '') {
@@ -2919,7 +2997,7 @@ export default {
         this.$Message.error('请输入联系电话')
         return false
       } else {
-        this.$axios.post(window.serverIp + '/api/communitygiftorder/', {
+        this.$axios.post(window.serverIp + '/api/communitygiftorder', {
           community_actity_id: activity.communityActityId,
           userId: localStorage.getItem('userId'),
           giftTotal: xiadanDetail.giftTotal,
@@ -3024,5 +3102,13 @@ export default {
     height:60px;
     border-radius: 5px;
     margin-left: 10px;
+    position:relative
+  }
+  .deletedImg{
+    width:20px;
+    height:20px;
+    position absolute;
+    top:0;
+    right:0;
   }
 </style>

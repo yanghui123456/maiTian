@@ -105,27 +105,23 @@ export default {
       dataCol: [
         {
           type: 'index',
-          width: 60,
           align: 'center',
           fixed: 'left'
         },
         {
           title: '互动类型',
           key: 'interactivityType',
-          align: 'center',
-          width: 120
+          align: 'center'
         },
         {
           title: '版式名称',
           key: 'format',
-          align: 'center',
-          width: 100
+          align: 'center'
         },
         {
           title: '文案主题',
           key: 'theme',
-          align: 'center',
-          width: 200
+          align: 'center'
         },
         {
           title: '海报',
@@ -144,13 +140,12 @@ export default {
           title: '转发语',
           key: 'forwarding',
           align: 'center',
-          width: 250
+          width: 400
         },
         {
           title: '备注',
           key: 'comments',
-          align: 'center',
-          width: 200
+          align: 'center'
         },
         {
           title: '状态',
@@ -228,7 +223,7 @@ export default {
         forwarding: '', // 转发语 是
         comments: '' // 备注 是
       },
-      editId: '', // 编辑id
+      editId: '', // 编辑系统触发的id
       systemNoticeId: '', // 互动类别id
       // 删除
       deletModal: false
@@ -271,7 +266,7 @@ export default {
     },
     // 获取列表
     getTable () {
-      this.$axios.get(window.serverIp + '/api/copywriting/getAllCopywritings')
+      this.$axios.get(window.serverIp + '/api/systemnotice/getSystemAll')
         .then(res => {
           if (res.status === 'success') {
             console.log(res.data)

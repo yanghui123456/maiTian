@@ -112,26 +112,22 @@ export default {
         {
           title: '节日节气',
           key: 'festivalName',
-          align: 'center',
-          width: 200
+          align: 'center'
         },
         {
           title: '版式名称',
           key: 'edition',
-          align: 'center',
-          width: 200
+          align: 'center'
         },
         {
           title: '文案主题',
           key: 'theme',
-          align: 'center',
-          width: 100
+          align: 'center'
         },
         {
           title: '提醒消息内容',
           key: 'remindMessage',
-          align: 'center',
-          width: 200
+          align: 'center'
         },
         {
           title: '海报',
@@ -150,13 +146,12 @@ export default {
           title: '转发语',
           key: 'festivalDetail',
           align: 'center',
-          width: 110
+          width: 300
         },
         {
           title: '备注',
           key: 'comments',
-          align: 'center',
-          width: 200
+          align: 'center'
         },
         {
           title: '操作',
