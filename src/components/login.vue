@@ -42,10 +42,8 @@ export default {
   },
   methods: {
     login () {
-      if (this.account === '' || this.account.length !== 11) {
+      if (this.account === '') {
         this.$Message.warning('请输入正确的账号')
-      } else if (this.password === '') {
-        this.$Message.warning('请输入密码')
       } else {
         this.loading = true
         this.text = '登录中'
@@ -65,10 +63,12 @@ export default {
           if (res.status === 'success') {
             // 缓存token 和 role 角色
             // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
-            /* 19831619641  123456 1 管理员
-            19831619642  123456 5 区经
-            19831619643  123456 6 店长
-            19831619644  123456 7 经纪人 */
+            /* 管理用户名密码：18500340567
+             区经用户名密码：13137381348
+             13811467522
+             店长用户名密码：15010167975
+             13810424573
+             经纪人 13801018705  13810197067 */
             var data = res.data
             var role = res.data.user.roleId
             store.commit('setToken', data.token)

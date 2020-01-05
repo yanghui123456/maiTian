@@ -25,15 +25,13 @@
         <Row>
           <Col span="24">
           <span class="title">发布时间：</span>
-          <DatePicker :editable="false" type="date" placeholder="请选择发布时间" style="width: auto" format="yyyy-MM-dd" v-model="modalData.publicTime" @on-change="publicChange"></DatePicker>
-          <TimePicker :editable="false" v-model="modalData.publicTimeDetail" format="HH:mm:ss" placeholder="Select time" style="width: 168px"></TimePicker>
+          <DatePicker :editable="false" format="yyyy-MM-dd HH:mm"  v-model="modalData.publicTime" @on-change="publicChange" type="datetime" placeholder="请选择发布时间" style="width: 200px"></DatePicker>
           </Col>
         </Row>
         <Row>
           <Col span="24">
           <span class="title">提醒时间：</span>
-          <DatePicker :editable="false" type="date" placeholder="请选择提醒时间" format="yyyy-MM-dd" style="width: auto" v-model="modalData.remindTime" @on-change="warnChange"></DatePicker>
-          <TimePicker :editable="false" v-model="modalData.remindTimeDetail" format="HH:mm:ss" placeholder="Select time" style="width: 168px"></TimePicker>
+          <DatePicker :editable="false" format="yyyy-MM-dd HH:mm"  v-model="modalData.remindTime" @on-change="warnChange" type="datetime" placeholder="请选择提醒时间" style="width: 200px"></DatePicker>
           </Col>
         </Row>
         <Row>
@@ -67,7 +65,7 @@
             :on-format-error="handleFormatError"
             :on-exceeded-size="handleMaxSize"
             :action="upLoadUrl"
-            style="display: inline-block;width:58px;cursor: pointer" v-if="modalData.uploadImg === ''">
+            style="display: inline-block;width:58px;cursor: pointer">
             <div style="width: 58px;height:58px;line-height: 58px;border:1px solid #eee;" class="tc">
               <Icon type="ios-camera" size="20"></Icon>
             </div>
@@ -226,14 +224,21 @@ export default {
       modalData: {
         theme: '', // 互动内容
         publicTime: '', // 发布时间
-        publicTimeDetail: '', // 发布时间时、分
         remindTime: '', // 提醒时间
-        remindTimeDetail: '', // 提醒时间时、分
         remindContent: '', // 提醒内容模板
         copyRighter: '', // 互动文案
         forwarding: '', // 转发语
         titlePic: '', // 上传的图片 只上传一张
         uploadImg: '' // 传给后台的
+      },
+      timing: {
+        chanel_id: '0',
+        mobile: '0',
+        type: 12,
+        content: '',
+        islook: 0,
+        ispush: 0,
+        sendtime: ''
       },
       editId: '', // 编辑的id
       // ===删除弹层
@@ -258,7 +263,6 @@ export default {
     },
     // 当弹窗显示隐藏状态变化时
     checkModal (status) {
-      console.log(status)
       // true=显示；false=隐藏
       if (status === false) {
         this.isChange1 = false
@@ -266,9 +270,7 @@ export default {
         this.modalData = {
           theme: '', // 互动内容
           publicTime: '', // 发布时间
-          publicTimeDetail: '', // 发布时间时、分
           remindTime: '', // 提醒时间
-          remindTimeDetail: '', // 提醒时间时、分
           remindContent: '', // 提醒内容模板
           copyRighter: '', // 互动文案
           forwarding: '', // 转发语
@@ -337,23 +339,19 @@ export default {
     // 编辑
     edit (param) {
       this.status = 2
+      console.log(param)
       this.editId = param.actualtimeActivityId
-      var time1 = param.publicTime.substring(0, 10)
-      var time2 = param.remindTime.substring(0, 10)
       // 绑定图片，两个时间的时分秒
       this.modalData = {
         theme: param.theme, // 互动内容
-        publicTime: time1, // 发布时间
-        publicTimeDetail: param.publicTime.substring(11, param.publicTime.length), // 发布时间时、分
-        remindTime: time2, // 提醒时间
-        remindTimeDetail: param.remindTime.substring(11, param.remindTime.length), // 提醒时间时、分
+        publicTime: param.publicTime, // 发布时间
+        remindTime: param.remindTime, // 提醒时间
         remindContent: param.remindContent, // 提醒内容模板
         copyRighter: param.copyRighter, // 互动文案
         forwarding: param.forwarding, // 转发语
         titlePic: param.titlePic, // 上传的图片 只上传一张
         uploadImg: window.serverIp + param.titlePic// 传给后台的
       }
-      console.log(this.modalData)
       this.modalStatus(true, '编辑互动内容', false)
     },
     // 弹窗-保存
@@ -364,12 +362,8 @@ export default {
         this.$Message.warning('请输入互动标题')
       } else if (data.publicTime === '') {
         this.$Message.warning('请选择发布时间')
-      } else if (data.publicTimeDetail === '') {
-        this.$Message.warning('请选择发布时间-时分秒')
       } else if (data.remindTime === '') {
         this.$Message.warning('请选择提醒时间')
-      } else if (data.remindTimeDetail === '') {
-        this.$Message.warning('请选择提醒时间-时分秒')
       } else if (data.remindContent === '') {
         this.$Message.warning('请输入提醒消息内容')
       } else if (data.titlePic === '') {
@@ -386,16 +380,25 @@ export default {
       console.log(this.modalData)
       // 1：新增；2-编辑
       if (this.status === 1) {
-        this.modalData.publicTime = this.modalData.publicTime + ' ' + this.modalData.publicTimeDetail
-        this.modalData.remindTime = this.modalData.remindTime + ' ' + this.modalData.remindTimeDetail
         var param = this.modalData
-        console.log(param)
         this.$axios.post(window.serverIp + '/api/actualactivity', param)
           .then(res => {
             if (res.status === 'success') {
-              this.$Message.success('添加互动成功')
-              this.modal = false
-              this.getTable(this.pageNum, 10)
+              this.timing.content = this.modalData.remindContent
+              this.timing.sendtime = this.modalData.remindTime + ':00'
+              this.$axios.post('http://mtssct.leiruitec.com/task/timing-push', this.timing)
+                .then(res => {
+                  if (res.status === 'success') {
+                    this.$Message.success('添加互动成功')
+                    this.modal = false
+                    this.getTable(this.pageNum, 10)
+                  } else {
+                    this.$Message.error(res.message)
+                  }
+                })
+                .catch(err => {
+                  console.log(err)
+                })
             } else {
               this.$Message.error(res.message)
             }
@@ -416,37 +419,67 @@ export default {
           var time1Y = publics.getFullYear()
           var time1M = publics.getMonth() + 1
           var time1H = publics.getDate()
+          var time1S = publics.getHours()
+          var time1F = publics.getMinutes()
+          console.log(time1S)
+          console.log(time1F)
           if (time1M < 10) {
             time1M = '0' + time1M
           }
           if (time1H < 10) {
             time1H = '0' + time1H
           }
-          noneObj.publicTime = time1Y + '-' + time1M + '-' + time1H + ' ' + noneObj.publicTimeDetail
+          if (time1S < 10) {
+            time1S = '0' + time1S
+          }
+          if (time1F < 10) {
+            time1F = '0' + time1F
+          }
+          noneObj.publicTime = time1Y + '-' + time1M + '-' + time1H + ' ' + time1S + ':' + time1F
         } else {
-          noneObj.publicTime = noneObj.publicTime + ' ' + noneObj.publicTimeDetail
+          noneObj.publicTime = noneObj.publicTime
         }
         if (this.isChange2 === false) {
           var remind = noneObj.remindTime
           var time2Y = remind.getFullYear()
           var time2M = remind.getMonth() + 1
           var time2H = remind.getDate()
+          var time2S = remind.getHours()
+          var time2F = remind.getMinutes()
           if (time2M < 10) {
             time2M = '0' + time2M
           }
           if (time2H < 10) {
             time2H = '0' + time2H
           }
-          noneObj.remindTime = time2Y + '-' + time2M + '-' + time2H + ' ' + noneObj.remindTimeDetail
+          if (time2S < 10) {
+            time2S = '0' + time2S
+          }
+          if (time2F < 10) {
+            time2F = '0' + time2F
+          }
+          noneObj.remindTime = time2Y + '-' + time2M + '-' + time2H + ' ' + time2S + ':' + time2F
         } else {
-          noneObj.remindTime = noneObj.remindTime + ' ' + noneObj.publicTimeDetail
+          noneObj.remindTime = noneObj.remindTime
         }
         this.$axios.put(window.serverIp + '/api/actualactivity', noneObj)
           .then(res => {
             if (res.status === 'success') {
-              this.$Message.success('修改互动成功')
-              this.modal = false
-              this.getTable(this.pageNum, 10)
+              this.timing.content = this.modalData.remindContent
+              this.timing.sendtime = noneObj.remindTime + ':00'
+              this.$axios.post('http://mtssct.leiruitec.com/task/timing-push', this.timing)
+                .then(res => {
+                  if (res.status === 'success') {
+                    this.$Message.success('添加互动成功')
+                    this.modal = false
+                    this.getTable(this.pageNum, 10)
+                  } else {
+                    this.$Message.error(res.message)
+                  }
+                })
+                .catch(err => {
+                  console.log(err)
+                })
             } else {
               this.$Message.error(res.message)
             }
@@ -536,5 +569,8 @@ export default {
   }
   .ivu-steps .ivu-steps-content{
     font-size:10px;
+  }
+  textarea.ivu-input {
+    font-size:12px;
   }
 </style>

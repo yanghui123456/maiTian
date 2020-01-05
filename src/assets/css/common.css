@@ -91,3 +91,6 @@
 .pt0{
   padding-top:0;
 }
+.inlineBlock{
+  display: inline-block;
+}

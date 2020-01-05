@@ -9,6 +9,7 @@
             <span class="title"> <span class="fb">麦田房产</span></span>
           </div>
           <div class="layout-nav">
+            <span class="editPass" @click="editPass">修改密码</span>
             <Icon type="md-power" size="24" class="ml30" @click="signOut"/></Icon>
           </div>
         </Menu>
@@ -30,7 +31,7 @@
               <Icon type="ios-stats" />
               <span>数据报表</span>
             </MenuItem>
-            <MenuItem name="usermanage" to="usermanage" v-if="role === '1'">
+            <MenuItem name="usermanage" to="usermanage">
               <Icon type="ios-person-add"></Icon>
               <span>用户管理</span>
             </MenuItem>
@@ -76,6 +77,34 @@
           </Content>
         </Layout>
       </Layout>
+      <!--修改密码弹窗-->
+      <!--弹层-->
+      <Modal
+        v-model="modal"
+        class-name="modal"
+        width="500px"
+        @on-visible-change="checkModal"
+        >
+        <p slot="header" class="tc">修改密码</p>
+        <div class="modalCentenr">
+          <Row class="mb20" type="flex" justify="center" >
+            <Col span="24">
+            <span class="lableName"><span class="star">*</span>新密码：</span>
+            <Input placeholder="请输入密码" style="width: 70%" clearable type="password" v-model="modalData.pass"/>
+            </Col>
+          </Row>
+          <Row class="mb20" type="flex" justify="center">
+            <Col span="24">
+            <span class="lableName"><span class="star">*</span>确认新密码：</span>
+            <Input placeholder="请确认密码" style="width: 70%" clearable type="password" v-model="modalData.ensurePass"/>
+            </Col>
+          </Row>
+        </div>
+        <div slot="footer" class="tc">
+          <Button type="info" @click="save">保存</Button>
+          <Button type="info" @click="cancel">取消</Button>
+        </div>
+      </Modal>
     </Layout>
   </div>
 </template>
@@ -85,6 +114,11 @@ export default {
   store,
   data () {
     return {
+      modal: false,
+      modalData: {
+        pass: '', // 互动内容
+        ensurePass: '' // 发布时间
+      },
       activeMenu: '',
       role: '' // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
     }
@@ -120,7 +154,7 @@ export default {
     getMenu (res) {
       this.menuSelect(res)
     },
-    // 腿粗哈
+    // 退出
     signOut () {
       this.$Modal.confirm({
         title: '提示',
@@ -135,6 +169,56 @@ export default {
           this.$Message.warning('您已取消退出')
         }
       })
+    },
+    checkModal (status) {
+      // true=显示；false=隐藏
+      if (status === false) {
+        this.modal = false
+        this.modalData = {
+          pass: '', // 互动内容
+          ensurePass: '' // 发布时间
+        }
+      }
+    },
+    // 修改密码
+    editPass () {
+      this.cancel()
+    },
+    save () {
+      var pass1 = this.modalData.pass
+      var pass2 = this.modalData.ensurePass
+      if (pass1 === '') {
+        this.$Message.warning('请输入新密码')
+        return false
+      } else if (pass2 === '') {
+        this.$Message.warning('请确认新密码')
+        return false
+      } else if (pass2 !== pass1) {
+        this.$Message.warning('抱歉，两次密码输入不一致')
+        return false
+      } else {
+        this.$axios.put(window.serverIp + '/api/user', {
+          userId: localStorage.getItem('userId'),
+          password: pass1
+        })
+          .then(res => {
+            if (res.status === 'success') {
+              this.$Message.success('密码修改成功，请重新登录')
+              this.cancel()
+              // 需要重新登录
+              localStorage.clear()
+              this.$router.replace('/')
+            } else {
+              this.$Message.error(res.message)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      }
+    },
+    cancel () {
+      this.modal = !this.modal
     }
   }
 }
@@ -175,6 +259,12 @@ export default {
         width:130px;
     .layout-nav
       text-align right;
+      .editPass
+        display inline-block;
+        height:100%;
+        padding: 0 10px;
+        color:white;
+        cursor:pointer;
   .menu-icon{
     transition: all .3s;
   }
@@ -221,4 +311,13 @@ export default {
   .ivu-layout-sider-children {
     overflow auto;
   }
+  .modalCentenr
+    height:100px;
+
+  .lableName
+    display inline-block;
+    width:90px;
+    text-align right;
+    .star
+      color:red;
 </style>

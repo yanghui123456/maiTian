@@ -266,7 +266,7 @@ export default {
     },
     // 获取列表
     getTable () {
-      this.$axios.get(window.serverIp + '/api/systemnotice/getSystemAll')
+      this.$axios.get(window.serverIp + '/api/copywriting/getAllCopywritings')
         .then(res => {
           if (res.status === 'success') {
             console.log(res.data)

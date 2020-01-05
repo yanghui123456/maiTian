@@ -22,73 +22,73 @@
       <Row>
         <!--发起-->
         <Col span="3">
-          <!--管理员-->
-          <Button type="info" v-if="role === 1" @click="adminEdit(item.communityActityId, 'manager')">编辑</Button>
-          <!--区域经理-->
-          <Button type="info" v-if="role === 5" @click="adminEdit(item.communityActityId, 'area')">查看</Button>
-          <!--店长-->
-          <Button type="info" v-if="role === 6" @click="adminEdit(item.communityActityId, 'dianzhang')">查看活动详情</Button>
+        <!--管理员-编辑（当前时间小于报名期开始都可以进行编辑），-->
+        <Button type="info" v-if="role === 1" @click="adminEdit(item.communityActityId, 'manager')" :disabled="Date.parse(item.enrollDateStart) < Date.parse(new Date())">编辑</Button>
+        <!--区域经理-->
+        <Button type="info" v-if="role === 5" @click="adminEdit(item.communityActityId, 'area')">查看</Button>
+        <!--店长-->
+        <Button type="info" v-if="role === 6" @click="adminEdit(item.communityActityId, 'dianzhang')">查看活动详情</Button>
         </Col>
         <!--报名期-->
         <Col span="3">
-          <!--管理员-->
-          <Button type="info" v-if="role === 1" @click="seeBaoming(item.enrollDateStart, item.enrollDateEnd, item.communityActityId, 'see')">查看</Button>
-          <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
-          <Button type="info" v-if="role === 5 && item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null" disabled>已报名</Button>
-          <!--区经：当管理员报名审核通过后，不显示撤销报名和修改明明按钮。否则显示-->
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
-          <!--店长:区经是否报名-->
-         <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
-         <Button type="info" v-if="role === 6 && item.communityEnroll !== null" disabled>区域经理已报名</Button>
+        <!--管理员-->
+        <Button type="info" v-if="role === 1" @click="seeBaoming(item.enrollDateStart, item.enrollDateEnd, item.communityActityId, 'see')">查看</Button>
+        <!--区域经理 当communityEnroll该字段为null表示没有进行过报名-->
+        <Button type="info" v-if="role === 5 && item.communityEnroll === null" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'bm')">报名</Button>
+        <Button type="info" v-if="role === 5 && item.communityEnroll !== null" disabled>已报名</Button>
+        <!--区经：当管理员报名审核通过后，不显示撤销报名和修改明明按钮。否则显示-->
+        <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'cxbm')">撤销报名</Button>
+        <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" @click="enrollProgress(item.communityActityId, item.enrollDateStart, item.enrollDateEnd, item.communityRegions, 'xgbm')">修改报名</Button>
+        <!--店长:区经是否报名-->
+        <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null" disabled>区域经理已报名</Button>
         </Col>
         <!--报名审核期和培训期（管理员和区域经理）-->
         <Col span="6" v-if="role === 1 || role === 5">
-          <!--管理员-->
-          <Button type="info" v-if="role === 1" @click="seeBaoming(item.auditDate, item.auditDateEnd, item.communityActityId, 'examine')">审核</Button>
-          <!--区域经理：根据审核是否通过展示不同的按钮-->
-          <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1">审核通过</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 2" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
-          <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 0">管理员暂未审核</Button>
+        <!--管理员-->
+        <Button type="info" v-if="role === 1" @click="seeBaoming(item.auditDate, item.auditDateEnd, item.communityActityId, 'examine')">审核</Button>
+        <!--区域经理：根据审核是否通过展示不同的按钮-->
+        <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1">审核通过</Button>
+        <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 2" @click="seeReason('baoMing', item.communityEnroll)">查看审核不通过原因</Button>
+        <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.enrollState === 0">管理员暂未审核</Button>
         </Col>
         <!--报名审核期（店长）-->
         <Col span="3" v-if="role === 6">
-          <!--店长-->
-          <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 0" disabled>管理员未审核</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1" disabled>管理员审核通过</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 2" disabled>管理员审核未通过</Button>
+        <!--店长-->
+        <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 0" disabled>管理员未审核</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1" disabled>管理员审核通过</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 2" disabled>管理员审核未通过</Button>
         </Col>
         <!--培训期（店长）-->
         <Col span="3" v-if="role === 6">
-          <!--店长：1、活动礼品未下单(区经已报名并且管理员审核已通过)
-          2.活动礼品未下单（区经已报名并且管理员审核拒绝或者未审核）
-          3.活动礼品下单（区经未报名）
-          4、活动礼品已下单
-          -->
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1 && item.communityOrderItems === null" @click="shoperXiadan(item, item.communityActityId)">活动礼品下单</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" disabled>活动礼品下单</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>活动礼品下单</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1 && item.communityOrderItems !== null">已下单</Button>
+        <!--店长：1、活动礼品未下单(区经已报名并且管理员审核已通过才可以进行下单)
+        2、活动礼品下单（区经已报名并且管理审核未通过或者拒绝时，不可以下单）
+        3.活动礼品下单（区经未报名）
+        4、活动礼品已下单
+        -->
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1 && item.communityEnroll.trainState === '1' && item.communityOrderItems === null" @click="shoperXiadan(item, item.communityActityId)">活动礼品下单</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState !== 1" disabled>活动礼品下单</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>活动礼品下单</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.enrollState === 1 && item.communityOrderItems !== null">已下单</Button>
         </Col>
         <!--培训期审核-->
         <Col span="3">
-          <!--管理员-->
-          <Button type="info" @click="seeBaoming(item.trainAuditStart, item.trainAuditEnd, item.communityActityId, 'trainAudit')"  v-if="role === 1">审核</Button>
-          <!--区域经理-->
-           <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '1'">审核通过</Button>
-          <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === 2" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
-          <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '0'">管理员暂未审核</Button>
-          <!--店长=培训审核通过后店长才可以下单-->
-          <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.trainState === '0'" disabled>管理员未审核</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.trainState === '1'" disabled>管理员审核通过</Button>
-          <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.trainState === '2'" disabled>管理员审核未通过</Button>
+        <!--管理员-->
+        <Button type="info" @click="seeBaoming(item.trainAuditStart, item.trainAuditEnd, item.communityActityId, 'trainAudit')"  v-if="role === 1">审核</Button>
+        <!--区域经理-->
+        <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '1'">审核通过</Button>
+        <Button type="info" v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === 2" @click="seeReason('peiXun', item.communityEnroll)">查看审核不通过原因</Button>
+        <Button type="info" disabled v-if="role === 5 && item.communityEnroll !== null && item.communityEnroll.trainState === '0'">管理员暂未审核</Button>
+        <!--店长=培训审核通过后店长才可以下单-->
+        <Button type="info" v-if="role === 6 && item.communityEnroll === null" disabled>区域经理未报名</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.trainState === '0'" disabled>管理员未审核</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.trainState === '1'" disabled>管理员审核通过</Button>
+        <Button type="info" v-if="role === 6 && item.communityEnroll !== null && item.communityEnroll.trainState === '2'" disabled>管理员审核未通过</Button>
         </Col>
         <!--宣传期和执行期(管理员和区域经理)-->
         <Col span="6" v-if="role === 1 || role === 5">
-          <Button type="info" v-if="role === 1" @click="seeBaoming(item.publicityDateStart, item.publicityDateEnd, item.communityActityId, 'xiadan')">下单情况</Button>
+        <Button type="info" v-if="role === 1" @click="seeBaoming(item.publicityDateStart, item.publicityDateEnd, item.communityActityId, 'xiadan')">下单情况</Button>
         </Col>
         <!--宣传期(店长)-->
         <Col span="3" v-if="role === 6">
@@ -415,10 +415,10 @@
               <img src="../../../assets/Shape.png" alt="删除按钮" class="deletedImg" @click="deletedImg(item,items.id)">
             </div>
             <!--<div class="oneUploadImg fl">-->
-              <!--<img :src="item.imgList.giftTop" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftTop !== ''">-->
-              <!--<img :src="item.imgList.giftTwo" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftTwo !== ''">-->
-              <!--<img :src="item.imgList.giftThree" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftThree !== ''">-->
-              <!--<img :src="item.imgList.giftFour" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftFour !== ''">-->
+            <!--<img :src="item.imgList.giftTop" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftTop !== ''">-->
+            <!--<img :src="item.imgList.giftTwo" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftTwo !== ''">-->
+            <!--<img :src="item.imgList.giftThree" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftThree !== ''">-->
+            <!--<img :src="item.imgList.giftFour" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.giftFour !== ''">-->
             <!--</div>-->
             </Col>
           </Row>
@@ -437,7 +437,8 @@
           <Row>
             <Col span="24">
             <span class="title">礼品最晚送达时间：</span>
-            <DatePicker :editable="false" v-model="modalData.serviceTime" @on-change="serviceChange" :disabled="disabled" type="datetime" placeholder="请选择礼品最晚送达时间" style="width: 200px"></DatePicker>
+            <!--<DatePicker v-model="modalData.serviceTime" @on-change="serviceChange" :disabled="disabled" type="datetime" placeholder="请选择礼品最晚送达时间" style="width: 200px"></DatePicker>-->
+            <Input placeholder="请先选择执行起止时间" style="width: auto" :disabled="true" v-model="modalData.serviceTime"/>
             </Col>
           </Row>
           <Row>
@@ -501,7 +502,7 @@
             <!--先模拟使用input，并且把四个字段值进行固定，后期再改-->
             <Input placeholder="请输入大区" style="width: auto" :disabled="disabled" v-model="enrollData.region"/>
             <!--<Select style="width:auto;" v-model="enrollData.region" @on-change="regionPickerChange" :placement="posit" placeholder="请选择区域">-->
-              <!--<Option v-for="item in regionList" :value="item.departmentId" :key="item.departmentId">{{ item.departmentName }}</Option>-->
+            <!--<Option v-for="item in regionList" :value="item.departmentId" :key="item.departmentId">{{ item.departmentName }}</Option>-->
             <!--</Select>-->
             </Col>
           </Row>
@@ -511,10 +512,10 @@
           <p class="modalTitle">
             选择小区分期
             <Checkbox
-            :indeterminate="indeterminate"
-            :value="checkAll"
-            @click.prevent.native="handleCheckAll"
-            style="margin-left:100px;font-weight: normal">全选</Checkbox>
+              :indeterminate="indeterminate"
+              :value="checkAll"
+              @click.prevent.native="handleCheckAll"
+              style="margin-left:100px;font-weight: normal">全选</Checkbox>
           </p>
           <Row>
             <Col span="24">
@@ -668,8 +669,8 @@
           </Row>
           <Row v-if="showOtherMoney">
             <Col span="24">
-              <span class="title">礼品最晚签收时间：</span>
-              <DatePicker v-model="signModalData.signTime" disabled type="datetime" style="width: 200px"></DatePicker>
+            <span class="title">礼品最晚签收时间：</span>
+            <DatePicker v-model="signModalData.signTime" disabled type="datetime" style="width: 200px"></DatePicker>
             </Col>
           </Row>
         </div>
@@ -1012,7 +1013,7 @@ export default {
       mtCommunityActityId: '', // 报名期审核列表中审核时需要用的，该活动的id
       mtBaomingShenheExzaminNo: '', // 报名期审核列表，审核不通过时，缓存该条数据，调用不通过接口时使用
       /* examineTotal: 0,
-      examinePageNum: 1, */
+       examinePageNum: 1, */
       examineCol: [
         {
           type: 'index',
@@ -1530,6 +1531,9 @@ export default {
     }
   },
   created () {
+    console.log(Date.parse('2020-01-03 15:00:00'))
+    console.log(Date.parse(new Date()))
+    console.log(Date.parse('2020-01-03 15:00:00') > Date.parse(new Date()))
     this.upLoadUrl = window.serverIp + '/fileupload' // 上传图片地址
     this.imgHttp = window.serverIp
     // 获取-角色
@@ -1776,9 +1780,9 @@ export default {
     },
     // 进度条-管理员=编辑
     /*
-    * role: manager-管理员角色编辑活动，area-区域经理角色查看活动（区经查看不可以上传图片）;dianzhang-店长角色查看活动详情
-    * listSeeDetail-管理员、区经、店长 在历史社群活动查看详情
-    * */
+     * role: manager-管理员角色编辑活动，area-区域经理角色查看活动（区经查看不可以上传图片）;dianzhang-店长角色查看活动详情
+     * listSeeDetail-管理员、区经、店长 在历史社群活动查看详情
+     * */
     adminEdit (id, role) {
       this.$axios.get(window.serverIp + '/api/community/getCommunityById?activityId=' + id)
         .then(res => {
@@ -1936,12 +1940,12 @@ export default {
     // 管理员-报名期/报名期审核/审核期培训/ 无分页
     seeBaoming (start, end, id, type) {
       /*
-      * start:报名审核期开始时间
-      * end:报名审核期结束时间
-      * id:
-      * type: 区分是报名期查看see(不对时间做审核)；还是报名期审核examine; 培训期审核trainAudit; 宣传期-下单情况xiadan
-      * 报名期审核的时候判断当前的时间是否在审核期内
-      * */
+       * start:报名审核期开始时间
+       * end:报名审核期结束时间
+       * id:
+       * type: 区分是报名期查看see(不对时间做审核)；还是报名期审核examine; 培训期审核trainAudit; 宣传期-下单情况xiadan
+       * 报名期审核的时候判断当前的时间是否在审核期内
+       * */
       this.mtCommunityActityId = id // 把活动id存起来，报名列表审核的时候需要用到
       var timeRight = this.checkTime(start, end) // 时间是否在报名期/报名审核期期间内
       if (type === 'see') { // 管理员=报名期
@@ -1997,8 +2001,8 @@ export default {
               this.bmAndShStatus(true, '培训期审核列表', 5)
             }
             /* else if (type === 'xiadan') {
-              this.bmAndShStatus(true, '下单情况', 3)
-            } */
+             this.bmAndShStatus(true, '下单情况', 3)
+             } */
             this.examineList = res.data
             // this.examineTotal = 20
           } else {
@@ -2150,12 +2154,15 @@ export default {
     // 执行起止时间
     implementChange (time, date) {
       this.modalData.implementTimeList = time
+      // 最晚送达时间就是执行开始时间
+      this.modalData.serviceTime = time[0]
+      console.log(time)
     },
     // 礼品最晚送达时间
-    serviceChange (time, date) {
-      this.modalData.serviceTime = time
-      this.changeserviceTime = true
-    },
+    /* serviceChange (time, date) {
+     this.modalData.serviceTime = time
+     this.changeserviceTime = true
+     }, */
     // 礼品最晚签收时间
     signChange (time, date) {
       this.modalData.signTime = time
@@ -2438,6 +2445,10 @@ export default {
       } else if (datas.signTime === '') {
         this.$Message.error('请选择礼品最晚签收时间')
         return false
+      } else if (Date.parse(datas.signTime) < Date.parse(datas.serviceTime)) {
+        // 最晚签收时间要大于最晚送达时间
+        this.$Message.error('最晚签收时间要晚于最晚送达时间')
+        return false
       } else {
         if (datas.giftList.length === 0) {
           this.$Message.error('请添加至少一项礼品介绍')
@@ -2687,12 +2698,12 @@ export default {
     // 进度条-报名、撤销报名  区分是报名还是撤销报名；
     enrollProgress (id, start, end, arr, type) {
       /*
-      *id:活动的id
-      * start:报名开始时间
-      * end:报名结束时间
-      * arr:报名的小区
-      * type:bm:报名；cxbm:撤销报名; xgbm:修改报名  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
-      * */
+       *id:活动的id
+       * start:报名开始时间
+       * end:报名结束时间
+       * arr:报名的小区
+       * type:bm:报名；cxbm:撤销报名; xgbm:修改报名  bm:可点击报名，cxbm:可点击撤销报名， xgbm:可点击修改报名
+       * */
       if (this.checkTime(start, end)) {
         // 判断当前时间是否在报名期间
         this.enrollModal = true
@@ -2863,8 +2874,8 @@ export default {
     // 审核不通过
     seeReason (type, bmAndshReason) {
       /* type: baoMing=报名不通过；peiXun:审核不通过
-      bmAndshReason: 该对象里包括报名期审核、培训期审核不通过的原因enrollFail查看报名不通过原因；trainFail查看培训审核不通原因
-      */
+       bmAndshReason: 该对象里包括报名期审核、培训期审核不通过的原因enrollFail查看报名不通过原因；trainFail查看培训审核不通原因
+       */
       this.auditDisabled = true // 弹窗中的文本框是否禁用
       if (type === 'baoMing') {
         var reason = bmAndshReason.enrollFail // 区经报名被管理员拒绝时的原因字段
@@ -3070,7 +3081,7 @@ export default {
     }
     .modalCentenr{
       .borderBottom .ivu-row{
-          margin-top:10px;
+        margin-top:10px;
       }
       .borderBottom .ivu-row div:nth-child(1){
         margin-top:0;

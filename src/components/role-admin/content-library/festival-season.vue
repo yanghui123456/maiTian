@@ -51,7 +51,7 @@
               :show-upload-list="false"
               :on-success="uoploadImg"
               :format="['jpg','jpeg','png']"
-              :max-size="1000000000"
+              :max-size="5242880"
               :on-format-error="handleFormatError"
               :on-exceeded-size="handleMaxSize"
               :action="upLoadUrl"

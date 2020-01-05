@@ -2,10 +2,22 @@
 <template>
   <div class="container">
     <div class="mb20">
-      <Button type="info">下载批量导入模板</Button>
-      <Button type="info">批量导入潜在客户信息</Button>
-      <Button type="info" @click="add">单个添加</Button>
-      <Button type="info">导出潜在客户信息</Button>
+      <Button type="info" @click="downLoad">下载批量导入模板</Button>
+      <div class="inlineBlock">
+        <Upload
+          ref="upload"
+          :show-upload-list="false"
+          :on-success="docUpSuccess"
+          :format="['xls', 'xlsx']"
+          :max-size="1000000000"
+          :on-format-error="handleFormatError"
+          :on-exceeded-size="handleMaxSize"
+          :action="upLoadUrl">
+          <i-button icon="ios-cloud-upload-outline" style="color:#2db7f5">批量导入潜在客户信息</i-button>
+        </Upload>
+      </div>
+      <!--<Button type="info" @click="add">单个添加</Button>-->
+      <Button type="info" @click="downLoadUserInfo">导出潜在客户信息</Button>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
@@ -30,7 +42,7 @@
           <Row class="mt10">
             <Col span="12">
             <span class="title">关联经纪人：</span>
-            <Input placeholder="请输入关联经纪人" style="width: auto" :disabled="disabled" v-model="modalData.house"/>
+            <Input placeholder="请输入关联经纪人" style="width: auto" :disabled="disabled" v-model="modalData.agent"/>
             </Col>
           </Row>
         </div>
@@ -147,7 +159,7 @@
           </Row>
         </div>
         <!--个人标签-->
-        <div class="borderBottom">
+        <div class="borderBottom" style="display: none;">
           <Row>
             <p class="modalTitle">个人标签</p>
             <Col span="24">
@@ -159,9 +171,9 @@
         </div>
       </div>
       <div slot="footer" class="tc">
-        <Button type="info" @click="ok">保存</Button>
-        <Button type="info">取消</Button>
-        <Button type="info">删除</Button>
+        <!--<Button type="info" @click="ok">保存</Button>-->
+        <!--<Button type="info">取消</Button>-->
+        <!--<Button type="info">删除</Button>-->
       </div>
     </Modal>
   </div>
@@ -170,6 +182,7 @@
 export default {
   data () {
     return {
+      upLoadUrl: '',
       modal: false,
       modalTitle: '',
       disabled: false, // 文本框是否禁用
@@ -185,72 +198,81 @@ export default {
           fixed: 'left'
         },
         {
-          title: '关联房产',
-          key: 'name',
+          title: '顾客姓名',
+          key: 'customName',
           align: 'center',
-          width: 200
+          width: 100
         },
         {
-          title: '基础信息',
+          title: '性别',
+          key: 'sex',
           align: 'center',
-          children: [
-            {
-              title: '姓名',
-              key: 'age',
-              align: 'center',
-              width: 200
-            },
-            {
-              title: '联系方式',
-              key: 'street',
-              align: 'center',
-              width: 200
-            },
-            {
-              title: '年龄范围',
-              key: 'building',
-              align: 'center',
-              width: 200
-            }
-          ]
+          width: 100
         },
         {
-          title: '家庭信息',
+          title: '电话',
+          key: 'topPhone',
           align: 'center',
-          children: [
-            {
-              title: '家庭结构',
-              key: 'caddress',
-              align: 'center',
-              width: 200
-            },
-            {
-              title: '婚姻情况',
-              key: 'cname',
-              align: 'center',
-              width: 200
-            }
-          ]
+          width: 120
         },
         {
-          title: '个人标签',
-          key: 'gender',
+          title: '微信号',
+          key: 'wechat',
+          align: 'center'
+        },
+        {
+          title: '关系程度',
+          key: 'relationship',
           align: 'center',
-          width: 200,
-          children: [
-            {
-              title: '亲子、健身',
-              key: 'caddress',
-              align: 'center',
-              width: 200
-            }
-          ]
+          width: 120
+        },
+        {
+          title: '顾客来源',
+          key: 'customSource',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '认识时间',
+          key: 'firstTime',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '个人爱好',
+          key: 'hobby',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '售房意愿',
+          key: 'sellIntention',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '购房意愿',
+          key: 'buyIntention',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '出租意愿',
+          key: 'rentIntention',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '求租意愿',
+          key: 'wantRent',
+          align: 'center',
+          width: 120
         },
         {
           title: '操作',
-          key: 'gender',
+          key: 'customId',
           align: 'center',
-          width: 200,
+          width: 80,
           fixed: 'right',
           render: (h, params) => {
             return h('div', [
@@ -267,18 +289,7 @@ export default {
                     this.seeDetail(params.row)
                   }
                 }
-              }, '查看'),
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                on: {
-                  click: () => {
-                    this.edit(params.row)
-                  }
-                }
-              }, '编辑')
+              }, '查看')
             ])
           }
         }
@@ -311,28 +322,90 @@ export default {
     }
   },
   created () {
-    const data = []
-    for (let i = 0; i < 10; i++) {
-      data.push({
-        key: i,
-        name: 'John Brown',
-        age: i + 1,
-        street: 'Lake Park',
-        building: 'C',
-        door: 2035,
-        caddress: 'Lake Street 42',
-        cname: 'SoftLake Co',
-        gender: 'M'
-      })
-    }
-    this.dataList = data
-    this.loading = false
+    /* h('Button', {
+      props: {
+        type: 'primary',
+        size: 'small'
+      },
+      on: {
+        click: () => {
+          this.edit(params.row)
+        }
+      }
+    }, '编辑') */
+    this.upLoadUrl = window.serverIp + '/fileupload' // 上传图片地址
+    this.getList(this.pageNum, this.pageSize)
   },
   methods: {
+    // 下载批量导入的模板
+    downLoad () {
+      window.open(window.serverIp + '/template/custom_list.xlsx')
+    },
+    // 导出潜在客户信息
+    downLoadUserInfo () {
+      this.$axios.get(window.serverIp + '/api/gratefulactivity/getExportAddress')
+        .then(res => {
+          if (res.status === 'success') {
+            window.open(window.serverIp + '/' + res.data)
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 上传客户信息
+    docUpSuccess (response, file, fileList) {
+      if (response.status === 'success') {
+        // 更新顾客列表接口
+        this.getList(this.pageNum, this.pageSize)
+        // 调后台提供的一个接口
+        this.$axios.post(window.serverIp + '/api/gratefulactivity/importCustom', {
+          filepath: response.data.filepath
+        })
+          .then(res => {
+            if (res.status === 'success') {
+              this.$Message.success('导入信息成功')
+            } else {
+              this.$Message.error(res.message)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      } else {
+        this.$Message.error(response.message)
+      }
+    },
+    // 文件格式验证失败
+    handleFormatError (file, fileList) {
+      this.$Message.error('文件格式校验失败')
+    },
+    // 文件超出指定大小
+    handleMaxSize (file, fileList) {
+      this.$Message.error('文件超出指定大小')
+    },
+    // 获取顾客列表
+    getList (pageNum, pageSize) {
+      this.$axios.get(window.serverIp + '/api/customofhouse/getCustomList?pageNum=' + pageNum + '&pageSize=' + pageSize)
+        .then(res => {
+          if (res.status === 'success') {
+            this.dataList = res.data.records
+            this.total = res.data.total
+            this.loading = false
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     // 页码改变
     pageChange (val) {
       this.pageNum = val
-      // this.getList(val, 10)
+      this.getList(val, this.pageSize)
     },
     // 弹窗-确定
     ok () {
@@ -356,8 +429,32 @@ export default {
     },
     // 查看详情
     seeDetail (params) {
-      console.log(params)
       this.modalStatus(true, '查看顾客详情', true)
+      // 开始赋值
+      this.modalData = {
+        house: '', // 关联房产
+        agent: params.customAgent, // 关联经纪人
+        name: params.customName, // 姓名
+        tel1: params.topPhone, // 联系方式1
+        tel2: '', // 联系方式2
+        age: '', // 年龄范围
+        cardNum: params.idCard, // 身份证号
+        role: '', // 社区角色
+        address: params.nativePlace, // 籍贯
+        profession: params.job, // 职业
+        familyStructure: '', // 家庭结构
+        maritalStatus: '', // 婚姻情况
+        hasCar: params.hasCar === 0 ? '无车' : '有车', // 有无车辆
+        carNum: '', // 车牌号
+        carPrice: '', // 车牌价位
+        birthDay: params.birthDate, // 生日
+        marryDay: params.marryDate, // 结婚纪念日
+        buyHouseDay: '', // 购房纪念日
+        familyMembersDay: '', // 家庭成员生日
+        religion: params.faith, // 宗教
+        hobby: params.hobby, // 爱好
+        tags: params.customLabel
+      }
     },
     // 编辑
     edit (params) {

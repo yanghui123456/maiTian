@@ -18,7 +18,7 @@
         <Row>
           <Col span="12">
           <span class="title">成员身份：</span>
-          <Select v-model="modalData.role" style="width: auto" @on-change="roleChange" :placement="posit" placeholder="请选择成员身份">
+          <Select v-model="modalData.role"  :disabled="disabled" style="width: auto" @on-change="roleChange" :placement="posit" placeholder="请选择成员身份">
             <Option v-for="item in roleList" :value="item.roleId" :key="item.roleId">{{ item.roleName }}</Option>
           </Select>
           </Col>
@@ -40,15 +40,15 @@
         <Row class="mt10">
           <Col span="12">
           <span class="title">入职日期：</span>
-          <DatePicker type="date" placeholder="请选择入职日期" style="width: auto" v-model="modalData.date" @on-change="dateChange"></DatePicker>
+          <DatePicker type="date" placeholder="请选择入职日期"  :disabled="disabled" style="width: auto" v-model="modalData.date" @on-change="dateChange"></DatePicker>
           </Col>
           <Col span="12">
           <span class="title">启用/禁用：</span>
           <RadioGroup v-model="modalData.radio">
-            <Radio label="C">
+            <Radio label="C"  :disabled="disabled">
               <span>在职,启用</span>
             </Radio>
-            <Radio label="D">
+            <Radio label="D"  :disabled="disabled">
               <span>离职,禁用</span>
             </Radio>
           </RadioGroup>
@@ -57,12 +57,12 @@
         <Row class="mt10">
           <Col span="24">
           <span class="title">多项级联：</span>
-          <Cascader :data="moreJilian" v-model="modalData.moreVal" trigger="hover" style="width:80%;display: inline-block;"></Cascader>
+          <Cascader :disabled="disabled" :data="moreJilian" v-model="modalData.moreVal" trigger="hover" style="width:80%;display: inline-block;" change-on-select></Cascader>
           </Col>
         </Row>
       </div>
       <div slot="footer" class="tc">
-        <Button type="info" @click="save">保存</Button>
+        <Button type="info" @click="save" disabled="disabled">保存</Button>
         <Button type="info" @click="cancle">取消</Button>
       </div>
     </Modal>
@@ -158,7 +158,7 @@ export default {
                     this.edit(params.row)
                   }
                 }
-              }, '编辑')
+              }, '查看')
             ])
           }
         }
@@ -338,7 +338,7 @@ export default {
       // 获取成员身份
       this.getRoleAndJilian('role', '/maitian/role', 'add', '')
       // 获取多项级联
-      this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=0', 'add', '')
+      this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9', 'add', '')
     },
     // 获取级联和角色列表
     getRoleAndJilian (type, url, status, params) {
@@ -387,43 +387,15 @@ export default {
           console.log(err)
         })
     },
-    // 获取角色列表
-    getRoleList () {
-      this.$axios.get(window.serverIp + '/maitian/role')
-        .then(res => {
-          if (res.status === 'success') {
-            this.roleList = res.data
-          } else {
-            this.$Message.error(res.message)
-          }
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
-    // 获取级联列表
-    getJilianList () {
-      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=0')
-        .then(res => {
-          if (res.status === 'success') {
-            this.moreJilian = res.data
-          } else {
-            this.$Message.error(res.message)
-          }
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
     // 编辑
     edit (params) {
       this.editUserId = params.userId
       this.$axios.get(window.serverIp + '/api/user/getUsersMore?user_id=' + params.userId)
         .then(res => {
           if (res.status === 'success') {
-            this.modalStatus(true, '编辑用户', false)
+            this.modalStatus(true, '用户详情', true)
             this.getRoleAndJilian('role', '/maitian/role', 'edit', res.data)
-            this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=0', 'edit', res.data)
+            this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9', 'edit', res.data)
           } else {
             this.$Message.error(res.message)
           }
