@@ -77,6 +77,7 @@ export default {
             localStorage.setItem('role', data.user.roleId)
             store.commit('setUserId', data.user.userId)
             localStorage.setItem('userId', data.user.userId)
+            localStorage.setItem('departmentId', data.user.departmentId)
             // 根据不同的角色跳转到不同的页面;
             if (role === 1) {
               // 管理员
@@ -85,7 +86,7 @@ export default {
               // 区域经理
               this.$router.replace('/home/news')
             } else if (role === 6) {
-              // 店长
+              // 店长 把departmentId缓存起来
               this.$router.replace('/home/news')
             } else if (role === 7) {
               // 经纪人

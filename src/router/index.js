@@ -7,6 +7,9 @@ import CustomerList from '@/components/role-agent/customer-list'
 import DataList from '@/components/role-admin/data-report'
 import UserManage from '@/components/role-admin/user-manage'
 import SaleControlManage from '@/components/role-admin/sale-control-manage'
+import EstateAngle from '@/components/role-admin/estate-angle'
+import AllocatedHouse from '@/components/role-admin/allocated-house'
+import PendingDisks from '@/components/role-admin/pending-disks'
 import SysTrigger from '@/components/role-admin/content-library/system-trigger'
 import RealTimePublish from '@/components/role-admin/content-library/real-time-publish'
 import RestivalSeason from '@/components/role-admin/content-library/festival-season'
@@ -66,11 +69,38 @@ export default new Router({
             requireToken: true
           }
         },
-        // 管理员--》销控管理表
+        // 销控表-组织角度
         {
           path: 'salecontrolmanage',
           name: 'salecontrolmanage',
           component: SaleControlManage,
+          meta: {
+            requireToken: true
+          }
+        },
+        // 销控表-楼盘角度
+        {
+          path: 'estateangle',
+          name: 'estateangle',
+          component: EstateAngle,
+          meta: {
+            requireToken: true
+          }
+        },
+        // 销控表-待分配房屋
+        {
+          path: 'allocatedhouse',
+          name: 'allocatedhouse',
+          component: AllocatedHouse,
+          meta: {
+            requireToken: true
+          }
+        },
+        // 销控表-待补盘房屋
+        {
+          path: 'pendingdisks',
+          name: 'pendingdisks',
+          component: PendingDisks,
           meta: {
             requireToken: true
           }

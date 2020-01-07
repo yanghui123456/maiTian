@@ -35,14 +35,20 @@
               <Icon type="ios-person-add"></Icon>
               <span>用户管理</span>
             </MenuItem>
-            <MenuItem name="salecontrolmanage" to="salecontrolmanage" v-if="role === '1'">
-              <Icon type="md-reorder" />
-              <span>销控表管理</span>
-            </MenuItem>
-            <MenuItem name="marketcontrol" to="marketcontrol"  v-if="role === '5' || role === '6'">
-              <Icon type="ios-grid" />
-              <span>销控表</span>
-            </MenuItem>
+            <!--<MenuItem name="marketcontrol" to="marketcontrol"  v-if="role === '5' || role === '6'">-->
+              <!--<Icon type="ios-grid" />-->
+              <!--<span>销控表</span>-->
+            <!--</MenuItem>-->
+            <Submenu name="content" v-if="role !== '7'">
+              <template slot="title">
+                <Icon type="ios-paper" />
+                销控表
+              </template>
+              <MenuItem name="salecontrolmanage" to="salecontrolmanage" v-if="role === '5' || role === '1' || role === '6'">组织角度</MenuItem>
+              <MenuItem name="estateangle" to="estateangle" v-if="role === '5' || role === '1' || role === '6'">楼盘角度</MenuItem>
+              <MenuItem name="allocatedhouse" to="allocatedhouse" v-if="role === '6'">待分配房屋</MenuItem>
+              <MenuItem name="pendingdisks" to="pendingdisks" v-if="role === '6'">待补盘房屋</MenuItem>
+            </Submenu>
             <Submenu name="content" v-if="role === '1'">
               <template slot="title">
                 <Icon type="ios-paper" />
