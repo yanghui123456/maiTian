@@ -3,7 +3,6 @@
   <div class="container">
     <div class="mb20">
       <Button type="info" @click="distribution">分配</Button>
-      <Button type="info">筛选</Button>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small" @on-select-all="selectAll" @on-selection-change="selectChange"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>

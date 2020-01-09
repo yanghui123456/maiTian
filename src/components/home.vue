@@ -33,7 +33,8 @@
             </MenuItem>
             <MenuItem name="usermanage" to="usermanage">
               <Icon type="ios-person-add"></Icon>
-              <span>用户管理</span>
+              <span v-if="role !== '6'">用户管理</span>
+              <span v-if="role === '6'">经纪人管理</span>
             </MenuItem>
             <!--<MenuItem name="marketcontrol" to="marketcontrol"  v-if="role === '5' || role === '6'">-->
               <!--<Icon type="ios-grid" />-->
@@ -70,10 +71,10 @@
               <Icon type="md-build" />
               <span>基础数据维护</span>
             </MenuItem>
-            <MenuItem name="agentmanager" to="agentmanager" v-if="role === '6'">
-              <Icon type="ios-person" />
-              <span>经纪人管理</span>
-            </MenuItem>
+            <!--<MenuItem name="agentmanager" to="agentmanager" v-if="role === '6'">-->
+              <!--<Icon type="ios-person" />-->
+              <!--<span>经纪人管理</span>-->
+            <!--</MenuItem>-->
           </Menu>
         </Sider>
         <!--内容-->
