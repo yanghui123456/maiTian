@@ -5,9 +5,10 @@
       <Row>
         <Col span="5">
         <span class="titleText">小区：</span>
-        <Select v-model="cellName"  style="width: auto" @on-change="cellNameChange" :placement="posit" placeholder="请输入小区" filterable>
-          <Option v-for="item in cellNameList" :value="item" :key="item">{{ item }}</Option>
-        </Select>
+        <!--<Select v-model="cellName"  style="width: auto" @on-change="cellNameChange" :placement="posit" placeholder="请输入小区" filterable>-->
+          <!--<Option v-for="item in cellNameList" :value="item" :key="item">{{ item }}</Option>-->
+        <!--</Select>-->
+        <Input placeholder="请输入活动名称" style="width:auto" v-model="nameSs" @on-blur="xiaoquBlur"/>
         </Col>
         <Col span="5">
         <span class="titleText">楼号：</span>
@@ -29,6 +30,7 @@
 export default {
   data () {
     return {
+      nameSs: '',
       posit: 'bottom', // 下拉框定位的位置
       cellName: '', // 小区名字
       cellNumber: '', // 小区楼号
@@ -46,87 +48,74 @@ export default {
           fixed: 'left'
         },
         {
-          title: '小区名',
-          key: 'regionName',
+          title: '区域店组',
+          key: 'label',
+          align: 'center',
+          width: 500
+        },
+        {
+          title: '意向',
+          key: 'yixiang',
           align: 'center',
           width: 100
         },
         {
-          title: '楼号',
-          key: 'buildingNumber',
+          title: '待补盘',
+          key: 'daibupan',
           align: 'center',
           width: 200
         },
         {
-          title: '单元号',
-          key: 'unitNumber',
-          align: 'center'
+          title: '待售',
+          key: 'daishou',
+          align: 'center',
+          width: 200
         },
         {
-          title: '楼层',
-          key: 'floorNumber',
-          align: 'center'
+          title: '待租',
+          key: 'daizhu',
+          align: 'center',
+          width: 200
         },
         {
-          title: '房间号',
-          key: 'houseNumber',
-          align: 'center'
+          title: '互相熟悉',
+          key: 'xianghushouxi',
+          align: 'center',
+          width: 200
         },
         {
-          title: '销售状态',
-          key: 'businessState',
-          align: 'center'
+          title: '铁客',
+          key: 'tieke',
+          align: 'center',
+          width: 200
         },
         {
-          title: '租赁状态',
-          key: 'useState',
-          align: 'center'
+          title: '互相认识',
+          key: 'xianghurenshi',
+          align: 'center',
+          width: 200
         },
         {
-          title: '房屋现状',
-          key: 'leaseState',
-          align: 'center'
+          title: '单方认识',
+          key: 'danfangrenshi',
+          align: 'center',
+          width: 200
         },
         {
-          title: '业主ID',
-          key: 'customId',
-          align: 'center'
-        },
-        {
-          title: '业主姓名',
-          key: 'customName',
-          align: 'center'
-        },
-        {
-          title: '经纪人姓名',
-          key: 'agentName',
-          align: 'center'
-        },
-        {
-          title: '经纪人ID',
-          key: 'agentId',
-          align: 'center'
+          title: '联系不上',
+          key: 'lianxibushang',
+          align: 'center',
+          width: 200
         }
       ],
       dataList: []
     }
   },
   created () {
-    this.getList(this.cellName, this.pageNum, this.pageSize)
-    this.getCellList('')
+    this.getList(this.nameSs, this.pageNum, this.pageSize)
+    // this.getCellList('')
   },
   methods: {
-    // 小区下拉change
-    cellNameChange (val) {
-      this.cellName = val
-      console.log(1)
-      // 根据小区获取楼栋号
-      this.getCellNumberList(this.cellName)
-    },
-    // 小区楼号change
-    cellNumberChange (val) {
-      this.cellNumber = val
-    },
     // 获取小区下拉列表
     getCellList (name) {
       this.$axios.get(window.serverIp + '/api/house/getRegionByDim?region_name=' + name)
@@ -141,6 +130,18 @@ export default {
         .catch(err => {
           console.log(err)
         })
+    },
+    // 小区下拉change
+    cellNameChange (val) {
+      this.cellName = val
+      console.log(1)
+      // 根据小区获取楼栋号
+      this.getCellNumberList(this.cellName)
+    },
+    // 小区失去焦点时，获取楼号列表
+    xiaoquBlur () {
+      // 根据小区获取楼栋号
+      this.getCellNumberList(this.nameSs)
     },
     // 获取楼号下拉
     getCellNumberList (name) {
@@ -157,33 +158,23 @@ export default {
           console.log(err)
         })
     },
-    // 级联变化
-    cascaderChange (val, data) {
-      this.moreVal = val
-      var str = ''
-      // 把data的值封装成:片区/大区/区域
-      for (var i = 0; i < data.length; i++) {
-        if (data.length - 1 > i) {
-          str = str + data[i].label + '/'
-        } else {
-          str = str + data[i].label
-        }
-      }
-      this.moreTextVal = str
+    // 小区楼号change
+    cellNumberChange (val) {
+      this.cellNumber = val
     },
     // 查询
     search () {
-      this.getList(this.cellName, this.pageNum, this.pageSize)
+      this.getList(this.nameSs, this.pageNum, this.pageSize)
     },
     // 获取列表departmentId: 最后选择的节点的id;departmentPrefix:片区/大区/区域 文字的
     getList (name, pageNum, pageSize) {
-      this.$axios.get(window.serverIp + '/api/house/getHouseTongjiByRegion?region_name==' + name + '&pageNum=' + pageNum + '&pageSize=' + pageSize)
+      this.$axios.get(window.serverIp + '/api/house/getHouseTongjiByRegion?region_name=' + name + '&pageNum=' + pageNum + '&pageSize=' + pageSize)
         .then(res => {
           if (res.status === 'success') {
             console.log(res.data)
             this.loading = false
-            this.total = res.data.total
-            this.dataList = res.data.records
+            this.total = res.data.length
+            this.dataList = res.data
           } else {
             this.$Message.error(res.message)
           }
@@ -195,7 +186,7 @@ export default {
     // 页码改变
     pageChange (val) {
       this.pageNum = val
-      this.getList(this.moreVal[this.moreVal.length - 1], this.moreTextVal, val, this.pageSize)
+      this.getList(this.nameSs, val, this.pageSize)
     }
   },
   // 计算属性

@@ -36,6 +36,12 @@ export default {
           fixed: 'left'
         },
         {
+          title: '区域店组',
+          key: 'label',
+          align: 'center',
+          width: 500
+        },
+        {
           title: '意向',
           key: 'yixiang',
           align: 'center',
@@ -50,43 +56,44 @@ export default {
         {
           title: '待售',
           key: 'daishou',
-          align: 'center'
+          align: 'center',
+          width: 200
         },
         {
           title: '待租',
           key: 'daizhu',
-          align: 'center'
+          align: 'center',
+          width: 200
         },
         {
           title: '互相熟悉',
           key: 'xianghushouxi',
-          align: 'center'
-        },
-        {
-          title: '区域',
-          key: 'label',
           align: 'center',
-          width: 500
+          width: 200
         },
         {
           title: '铁客',
           key: 'tieke',
-          align: 'center'
+          align: 'center',
+          width: 200
         },
         {
           title: '互相认识',
           key: 'xianghurenshi',
-          align: 'center'
+          align: 'center',
+          width: 200
         },
         {
           title: '单方认识',
           key: 'danfangrenshi',
-          align: 'center'
+          align: 'center',
+          width: 200
         },
         {
           title: '联系不上',
           key: 'lianxibushang',
-          align: 'center'
+          align: 'center',
+          width: 200
         }
       ],
       dataList: []
