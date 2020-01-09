@@ -5,7 +5,7 @@
       <Row>
         <Col span="18">
           <span class="titleText">多项级联：</span>
-          <Cascader :data="moreJilian" v-model="moreVal" trigger="hover" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
+          <Cascader :data="moreJilian" v-model="moreVal" trigger="click" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
         </Col>
         <Col span="6">
           <Button type="info" @click="search">查询</Button>
@@ -36,65 +36,50 @@ export default {
           fixed: 'left'
         },
         {
-          title: '小区名',
-          key: 'regionName',
+          title: '意向',
+          key: 'yixiang',
           align: 'center',
           width: 100
         },
         {
-          title: '楼号',
-          key: 'buildingNumber',
+          title: '待补盘',
+          key: 'daibupan',
           align: 'center',
           width: 200
         },
         {
-          title: '单元号',
-          key: 'unitNumber',
+          title: '待售',
+          key: 'daishou',
           align: 'center'
         },
         {
-          title: '楼层',
-          key: 'floorNumber',
+          title: '待租',
+          key: 'daizhu',
           align: 'center'
         },
         {
-          title: '房间号',
-          key: 'houseNumber',
+          title: '互相熟悉',
+          key: 'xianghushouxi',
           align: 'center'
         },
         {
-          title: '销售状态',
-          key: 'businessState',
+          title: '铁客',
+          key: 'tieke',
           align: 'center'
         },
         {
-          title: '租赁状态',
-          key: 'useState',
+          title: '互相认识',
+          key: 'xianghurenshi',
           align: 'center'
         },
         {
-          title: '房屋现状',
-          key: 'leaseState',
+          title: '单方认识',
+          key: 'danfangrenshi',
           align: 'center'
         },
         {
-          title: '业主ID',
-          key: 'customId',
-          align: 'center'
-        },
-        {
-          title: '业主姓名',
-          key: 'customName',
-          align: 'center'
-        },
-        {
-          title: '经纪人姓名',
-          key: 'agentName',
-          align: 'center'
-        },
-        {
-          title: '经纪人ID',
-          key: 'agentId',
+          title: '联系不上',
+          key: 'lianxibushang',
           align: 'center'
         }
       ],
