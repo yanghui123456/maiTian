@@ -63,6 +63,12 @@ export default {
           align: 'center'
         },
         {
+          title: '区域',
+          key: 'label',
+          align: 'center',
+          width: 500
+        },
+        {
           title: '铁客',
           key: 'tieke',
           align: 'center'
