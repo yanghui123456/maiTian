@@ -6,7 +6,7 @@
       <Row>
         <Col span="10">
           <span class="titleText">多项级联：</span>
-          <Cascader :data="moreJilian" v-model="moreVal" trigger="hover" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
+          <Cascader :data="moreJilian" v-model="moreVal" trigger="click" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
         </Col>
         <Col span="10">
           <span class="titleText">经纪人：</span>
