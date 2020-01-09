@@ -112,6 +112,7 @@ export default {
     }
   },
   created () {
+    this.loading = false
     // this.getList(this.nameSs, this.pageNum, this.pageSize)
     // this.getCellList('')
   },
@@ -164,6 +165,7 @@ export default {
     },
     // 查询
     search () {
+      this.loading = true
       this.getList(this.nameSs, this.pageNum, this.pageSize)
     },
     // 获取列表departmentId: 最后选择的节点的id;departmentPrefix:片区/大区/区域 文字的
