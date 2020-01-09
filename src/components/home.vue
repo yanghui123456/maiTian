@@ -68,10 +68,10 @@
               <MenuItem name="communityactivity" to="communityactivity" v-if="role === '1' || role === '5' || role === '6'">社群活动</MenuItem>
               <MenuItem name="customergiving" to="customergiving" v-if="role === '1' || role === '6'">客户感恩礼</MenuItem>
             </Submenu>
-            <MenuItem name="datamaintain" to="datamaintain" v-if="role === '1'">
-              <Icon type="md-build" />
-              <span>基础数据维护</span>
-            </MenuItem>
+            <!--<MenuItem name="datamaintain" to="datamaintain" v-if="role === '1'">-->
+              <!--<Icon type="md-build" />-->
+              <!--<span>基础数据维护</span>-->
+            <!--</MenuItem>-->
             <!--<MenuItem name="agentmanager" to="agentmanager" v-if="role === '6'">-->
               <!--<Icon type="ios-person" />-->
               <!--<span>经纪人管理</span>-->
