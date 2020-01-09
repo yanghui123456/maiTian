@@ -57,45 +57,55 @@ export default {
           fixed: 'left'
         },
         {
-          title: '个人标签',
-          key: 'customLabel',
+          title: '所在小区',
+          key: 'regionName',
           align: 'center',
           width: 100
         },
         {
-          title: '顾客姓名',
-          key: 'customName',
+          title: '所在楼号',
+          key: 'unitNumber',
           align: 'center',
           width: 200
         },
         {
-          title: '手机',
-          key: 'topPhone',
-          align: 'center'
-        },
-        {
-          title: '顾客生日',
-          key: 'birthDate',
-          align: 'center'
-        },
-        {
-          title: '关联小区',
-          key: 'regionName',
-          align: 'center'
-        },
-        {
-          title: '楼号',
-          key: 'buildingNumber',
-          align: 'center'
-        },
-        {
-          title: '单元号',
+          title: '所在单元',
           key: 'unitNumber',
+          align: 'center'
+        },
+        {
+          title: '所在楼层',
+          key: 'floorNumber',
           align: 'center'
         },
         {
           title: '房间号',
           key: 'houseNumber',
+          align: 'center'
+        },
+        {
+          title: '待售',
+          key: 'businessState',
+          align: 'center'
+        },
+        {
+          title: '租赁状况',
+          key: 'leaseState',
+          align: 'center'
+        },
+        {
+          title: '面积',
+          key: 'houseArea',
+          align: 'center'
+        },
+        {
+          title: '朝向',
+          key: 'direction',
+          align: 'center'
+        },
+        {
+          title: '居室',
+          key: 'hall',
           align: 'center'
         }
       ],
