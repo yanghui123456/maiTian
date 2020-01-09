@@ -31,9 +31,10 @@
               <Icon type="ios-stats" />
               <span>数据报表</span>
             </MenuItem>
+            <!--店长角色下：显示经纪人管理，其余角色（不包括经纪人）：展示用户管理-->
             <MenuItem name="usermanage" to="usermanage">
               <Icon type="ios-person-add"></Icon>
-              <span v-if="role !== '6'">用户管理</span>
+              <span v-if="role === '1' || role === '5'">用户管理</span>
               <span v-if="role === '6'">经纪人管理</span>
             </MenuItem>
             <!--<MenuItem name="marketcontrol" to="marketcontrol"  v-if="role === '5' || role === '6'">-->
