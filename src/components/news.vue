@@ -1,39 +1,54 @@
 <!--消息-->
 <template>
   <div class="container">
-    <div class="mb20">
-      <Button type="info" @click="allNews">全部消息</Button>
-      <Button type="info" @click="noRead">未读消息</Button>
-      <Button type="info" @click="setAllRead">全部标记为已读</Button>
-    </div>
+    <!--<div class="mb20">-->
+      <!--<Button type="info" @click="allNews">全部消息</Button>-->
+      <!--<Button type="info" @click="noRead">未读消息</Button>-->
+      <!--<Button type="info" @click="setAllRead">全部标记为已读</Button>-->
+    <!--</div>-->
     <div class="pr">
-      <Card class="w350">
+      <Card class="w350" style="margin-top:10px;" v-for="item in newsList" :key="item.id" v-if="newsList.length > 0">
         <p slot="title">
           <Icon type="md-notifications" />
-          新的责任盘
+          {{item.title}}
         </p>
-        <a href="#" slot="extra" @click.prevent="detail">
-          <Icon type="ios-loop-strong"></Icon>
-          查看详情
-        </a>
-        <p class="time">2019年8月23日</p>
-        <p>点击-销控表分配房屋</p>
+        <!--<a href="#" slot="extra" @click.prevent="detail">-->
+          <!--<Icon type="ios-loop-strong"></Icon>-->
+          <!--查看详情-->
+        <!--</a>-->
+        <p class="time"> {{item.sendtime}}</p>
+        <p>{{item.content}}</p>
+        <Button type="info" class="hasRead" @click="setRead(item.id)" v-if="item.islook === 0">标记为已读</Button>
+        <Button type="info" class="hasRead" disabled v-if="item.islook === 1">已读</Button>
       </Card>
-      <Button type="info" class="hasRead" @click="setRead">标记为已读</Button>
+      <p v-if="newsList.length === 0" class="tc">暂无数据</p>
     </div>
   </div>
 </template>
 <script>
 export default {
   data () {
-    return {}
+    return {
+      newsList: []
+    }
   },
   created () {
+    this.allNews()
   },
   methods: {
-    // 全部消息
+    // 获取全部消息
     allNews () {
-      this.$Message.warning('全部消息')
+      this.$axios.get(window.serverIp + '/maitian/notice/getNoticeByUser')
+        .then(res => {
+          if (res.status === 'success') {
+            this.newsList = res.data
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 未读消息
     noRead () {
@@ -44,8 +59,19 @@ export default {
       this.$Message.warning('全部标记为已读')
     },
     // 标记已读
-    setRead () {
-      this.$Message.warning('标记已读')
+    setRead (id) {
+      this.$axios.put(window.serverIp + '/maitian/notice/setNoticeLook?notice_id=' + id)
+        .then(res => {
+          if (res.status === 'success') {
+            this.$Message.success('标记成功')
+            this.allNews()
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 查看详情
     detail () {

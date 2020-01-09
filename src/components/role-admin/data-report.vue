@@ -96,89 +96,89 @@
       </div>
     </div>
     <!--区域经理-社群活动-->
-    <div v-if="role === 5 || role === 6" style="display: none;">
-      <p class="pageTitle mt20">社群活动</p>
-      <div class="cardItems tc">
-        <div class="purple">
-          <p>5321</p>
-          <p>活动期间新增的字段数量</p>
-        </div>
-        <div class="blue">
-          <p>1000</p>
-          <p>修改的字段数量</p>
-        </div>
-        <div class="purple">
-          <p>{{addTels}}</p>
-          <p>新增的手机号</p>
-        </div>
-        <div class="blue">
-          <p>{{addWechats}}</p>
-          <p>新增的微信号</p>
-        </div>
-      </div>
-      <div class="cardItems tc mt10">
-        <div class="blue">
-          <p>{{telCalls}}</p>
-          <p>新呼出的手机号</p>
-        </div>
-        <div class="purple">
-          <p>1000</p>
-          <p>手机时长</p>
-        </div>
-        <div class="blue">
-          <p>{{wechatCalls}}</p>
-          <p>新呼出的微信号</p>
-        </div>
-      </div>
-    </div>
+    <!--<div v-if="role === 5 || role === 6">-->
+      <!--<p class="pageTitle mt20">社群活动</p>-->
+      <!--<div class="cardItems tc">-->
+        <!--<div class="purple">-->
+          <!--<p>5321</p>-->
+          <!--<p>活动期间新增的字段数量</p>-->
+        <!--</div>-->
+        <!--<div class="blue">-->
+          <!--<p>1000</p>-->
+          <!--<p>修改的字段数量</p>-->
+        <!--</div>-->
+        <!--<div class="purple">-->
+          <!--<p>{{addTels}}</p>-->
+          <!--<p>新增的手机号</p>-->
+        <!--</div>-->
+        <!--<div class="blue">-->
+          <!--<p>{{addWechats}}</p>-->
+          <!--<p>新增的微信号</p>-->
+        <!--</div>-->
+      <!--</div>-->
+      <!--<div class="cardItems tc mt10">-->
+        <!--<div class="blue">-->
+          <!--<p>{{telCalls}}</p>-->
+          <!--<p>新呼出的手机号</p>-->
+        <!--</div>-->
+        <!--<div class="purple">-->
+          <!--<p>1000</p>-->
+          <!--<p>手机时长</p>-->
+        <!--</div>-->
+        <!--<div class="blue">-->
+          <!--<p>{{wechatCalls}}</p>-->
+          <!--<p>新呼出的微信号</p>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
     <!--区域经理-社区便民服务活动-->
-    <div v-if="role === 5 || role === 6" style="display: none;">
-      <p class="pageTitle mt20">社区便民服务活动</p>
-      <div class="cardItems tc">
-        <div class="purple">
-          <p>5321</p>
-          <p>维护结果反馈指标</p>
-        </div>
-        <div class="blue">
-          <p>1000</p>
-          <p>老客户新增字段信息量</p>
-        </div>
-        <div class="purple">
-          <p>1000</p>
-          <p>老客户电话呼出量</p>
-        </div>
-        <div class="blue">
-          <p>1000</p>
-          <p>老客户微信呼出量</p>
-        </div>
-      </div>
-    </div style="display: none;">
-    <div class="cardItems tc mt10" style="display: none;">
-      <div class="blue">
-        <p>1000</p>
-        <p>电话呼出时长</p>
-      </div>
-      <div class="purple">
-        <p>1000</p>
-        <p>互动记录</p>
-      </div>
-    </div>
+    <!--<div v-if="role === 5 || role === 6">-->
+      <!--<p class="pageTitle mt20">社区便民服务活动</p>-->
+      <!--<div class="cardItems tc">-->
+        <!--<div class="purple">-->
+          <!--<p>5321</p>-->
+          <!--<p>维护结果反馈指标</p>-->
+        <!--</div>-->
+        <!--<div class="blue">-->
+          <!--<p>1000</p>-->
+          <!--<p>老客户新增字段信息量</p>-->
+        <!--</div>-->
+        <!--<div class="purple">-->
+          <!--<p>1000</p>-->
+          <!--<p>老客户电话呼出量</p>-->
+        <!--</div>-->
+        <!--<div class="blue">-->
+          <!--<p>1000</p>-->
+          <!--<p>老客户微信呼出量</p>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+    <!--<div class="cardItems tc mt10">-->
+      <!--<div class="blue">-->
+        <!--<p>1000</p>-->
+        <!--<p>电话呼出时长</p>-->
+      <!--</div>-->
+      <!--<div class="purple">-->
+        <!--<p>1000</p>-->
+        <!--<p>互动记录</p>-->
+      <!--</div>-->
+    <!--</div>-->
     <!--单项数据指标-->
-    <p class="pageTitle mt20" style="display: none;">成交客户感恩礼活动</p>
-    <div class="cardItems tc" style="display: none;">
-      <div class="purple">
-        <p>5321</p>
-        <p>礼品回馈率</p>
-      </div>
-      <div class="blue">
-        <p>1000</p>
-        <p>老客户维护率</p>
-      </div>
-      <div class="purple">
-        <p>1000</p>
-        <p>失联率</p>
-      </div>
-    </div>
+    <!--<p class="pageTitle mt20">成交客户感恩礼活动</p>-->
+    <!--<div class="cardItems tc">-->
+      <!--<div class="purple">-->
+        <!--<p>5321</p>-->
+        <!--<p>礼品回馈率</p>-->
+      <!--</div>-->
+      <!--<div class="blue">-->
+        <!--<p>1000</p>-->
+        <!--<p>老客户维护率</p>-->
+      <!--</div>-->
+      <!--<div class="purple">-->
+        <!--<p>1000</p>-->
+        <!--<p>失联率</p>-->
+      <!--</div>-->
+    <!--</div>-->
     <Modal
       v-model="modal"
       class-name="modal"
@@ -260,7 +260,6 @@ export default {
       this.$axios.get(window.serverIp + '/api/user/getUsersByGroup?departmentId=' + localStorage.getItem('departmentId'))
         .then(res => {
           if (res.status === 'success') {
-            console.log(res.data.records)
             this.agentList = res.data.records
           } else {
             this.$Message.error(res.message)
@@ -412,7 +411,6 @@ export default {
       this.$axios.get(window.serverIp + '/api/ActivityStatistic/getActivityStatistic?departmentId=' + departmentId + '&userId=' + userId + '&startDate=' + startDate + '&endDate=' + endDate)
         .then(res => {
           if (res.status === 'success') {
-            console.log(res.data)
             var data = res.data
             // 进行赋值
             /* addFieldCustoms: 新增客户字段
