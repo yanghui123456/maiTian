@@ -112,7 +112,7 @@ export default {
     }
   },
   created () {
-    this.getList(this.nameSs, this.pageNum, this.pageSize)
+    // this.getList(this.nameSs, this.pageNum, this.pageSize)
     // this.getCellList('')
   },
   methods: {
