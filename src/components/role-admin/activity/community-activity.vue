@@ -111,7 +111,7 @@
             :on-format-error="handleFormatError"
             :on-exceeded-size="handleMaxSize"
             :action="upLoadUrl">
-            <i-button icon="ios-cloud-upload-outline" style="color:#2db7f5">上传活动总结</i-button>
+            <i-button icon="ios-cloud-upload-outline" style="color:#FEA202">上传活动总结</i-button>
           </Upload>
         </div>
         <!--周总说先不显示此按钮-->

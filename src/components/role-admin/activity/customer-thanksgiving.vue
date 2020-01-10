@@ -3,7 +3,7 @@
   <div class="container">
     <div class="mb20" v-if="role === 1">
       <Button type="info" @click="addActivity">添加活动</Button>
-      <Button type="info" @click="downLoad" disabled>下载成交客户名单模板</Button>
+      <Button type="info" @click="downLoad">下载成交客户名单模板</Button>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
@@ -121,13 +121,14 @@
             </Col>
             <Col span="16">
             <Row>
-              <Col span="24">
+              <Col span="24" class="pl15">
               <Input placeholder="请输入礼品名称" style="width: auto" :disabled="disabled" v-model="item.name"/>
               </Col>
-              <Col span="24" class="mt10 mb10">
+              <Col span="24" class="mt10 mb10 pl15">
               <Input placeholder="请输入礼品描述" style="width: auto" :disabled="disabled" v-model="item.describe"/>
               </Col>
               <Col span="24">
+              <span class="cRed">￥</span>
               <Input placeholder="请输入礼品价格" style="width: auto" :disabled="disabled" v-model="item.price" type="number"/>
               </Col>
             </Row>
@@ -231,23 +232,18 @@ export default {
             return h('span', params.index + (this.pageNum - 1) * this.pageSize + 1)
           }
         },
-        /* {
-          title: '发生时间',
-          key: 'name',
-          align: 'center',
-          width: 100
-        },
         {
-          title: '本月成交客总量',
-          key: 'name',
+          title: '成交客总量',
+          key: 'customCount',
           align: 'center',
           width: 150
         },
         {
-          title: '本月礼品支持数量',
+          title: '支持礼品率',
+          key: 'supportRatio',
           align: 'center',
           width: 150
-        }, */
+        },
         {
           title: '活动主题',
           key: 'theme',
@@ -762,6 +758,7 @@ export default {
     // 下载成交模板
     downLoad () {
       this.$Message.warning('下载成交客户名单模板')
+      window.open(window.serverIp + '/template/grateful_custom.xlsx')
     },
     // =========================添加感恩礼活动
     // 获取受众列表

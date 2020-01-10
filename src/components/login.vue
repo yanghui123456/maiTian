@@ -5,7 +5,7 @@
     <div class="right">
       <div class="loginBox">
         <div class="box">
-          <p class="title">麦田房产</p>
+          <p class="title">超级销控表</p>
           <div>
             <Input  v-model="account" prefix="ios-phone-portrait" placeholder="请输入账号" class="input"/>
           </div>
@@ -111,7 +111,7 @@ export default {
 .login
   width:100%;
   height:100%;
-  background: radial-gradient(30% 50% at 30% 50%, #60C1FB, #4567E9);
+  background: #FEA202;
   .left,.right
     height:100%;
     float left;
@@ -131,7 +131,7 @@ export default {
     .loginBox
       width:400px;
       padding: 10px;
-      background #79b7f7;
+      background #FEA202;
       margin-top:-80px;
       border-radius 2px;
       box-sizing border-box;
@@ -143,7 +143,7 @@ export default {
         border-radius 2px;
         box-sizing border-box;
         .title
-          color:#3859d7;
+          color:#FEA202;
           font-size:20px;
           text-align center;
           font-weight 700;
@@ -152,14 +152,13 @@ export default {
           width:100%;
           height:40px;
           line-height:27px;
-          background #6181fb;
           color:white;
           font-size:15px;
           margin-top:16px;
         .input
           margin-top:20px;
         .forget
-          color:#6181fb;
+          color:#FEA202;
           cursor:pointer;
           text-align:right;
   .text

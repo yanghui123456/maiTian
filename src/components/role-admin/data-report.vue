@@ -376,7 +376,7 @@ export default {
         departmentId = this.moreVal[this.moreVal.length - 1]
       }
       // 时间
-      if (this.timePicker.length > 0) {
+      if (this.timePicker[0] !== '' && this.timePicker[1] !== 0) {
         // 判断时间插件是否change
         if (this.timePickerChange) {
           startTime = this.timePicker[0]

@@ -1,11 +1,11 @@
 <!--消息-->
 <template>
   <div class="container">
-    <!--<div class="mb20">-->
-      <!--<Button type="info" @click="allNews">全部消息</Button>-->
-      <!--<Button type="info" @click="noRead">未读消息</Button>-->
-      <!--<Button type="info" @click="setAllRead">全部标记为已读</Button>-->
-    <!--</div>-->
+    <div class="mb20">
+      <i-button type="primary" @click="allNews" :loading="loadAll">全部消息</i-button>
+      <i-button type="primary" @click="noRead('click')" :loading="loadNoRead">未读消息</i-button>
+      <i-button type="primary" @click="setAllRead" :loading="loadHasRead">全部标记为已读</i-button>
+    </div>
     <div class="pr">
       <Card class="w350" style="margin-top:10px;" v-for="item in newsList" :key="item.id" v-if="newsList.length > 0">
         <p slot="title">
@@ -29,19 +29,30 @@
 export default {
   data () {
     return {
+      loadAll: false,
+      loadNoRead: false,
+      loadHasRead: false,
+      clickType: 'all', // all全部，noRead未读,
+      noReadStr: '', // 未读列表中id的字符串
       newsList: []
     }
   },
   created () {
     this.allNews()
+    // 获取未读消息，全部标记为已读列表可以用到
+    this.noRead('defalut')
   },
   methods: {
     // 获取全部消息
     allNews () {
+      this.loadAll = true
+      this.newsList = []
+      this.clickType = 'all'
       this.$axios.get(window.serverIp + '/maitian/notice/getNoticeByUser')
         .then(res => {
           if (res.status === 'success') {
             this.newsList = res.data
+            this.loadAll = false
           } else {
             this.$Message.error(res.message)
           }
@@ -51,12 +62,54 @@ export default {
         })
     },
     // 未读消息
-    noRead () {
-      this.$Message.warning('未读消息')
+    noRead (type) {
+      // 值为click的时候代表的是点击按钮，defalut的时候代表的是默认获取列表，当点击全部标记为已读的时候使用
+      if (type === 'click') {
+        this.loadNoRead = true
+        this.newsList = []
+        this.clickType = 'noRead'
+      }
+      this.$axios.get(window.serverIp + '/maitian/notice/getNoticeByUser?islook=0')
+        .then(res => {
+          if (res.status === 'success') {
+            if (type === 'click') {
+              this.newsList = res.data
+              this.loadNoRead = false
+            } else if (type === 'defalut') {
+              var arr = []
+              for (var i = 0; i < res.data.length; i++) {
+                arr.push(res.data[i].id)
+              }
+              this.noReadStr = arr
+            }
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 全部标记已读
     setAllRead () {
-      this.$Message.warning('全部标记为已读')
+      this.loadHasRead = true
+      this.$axios.put(window.serverIp + '/maitian/notice/setNoticeLook?notice_id=' + this.noReadStr)
+        .then(res => {
+          if (res.status === 'success') {
+            this.loadHasRead = false
+            this.$Message.success('全部标记为已读')
+            if (this.clickType === 'all') {
+              this.allNews()
+            } else if (this.clickType === 'noRead') {
+              this.noRead('click')
+            }
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     // 标记已读
     setRead (id) {

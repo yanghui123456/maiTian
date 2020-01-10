@@ -27,10 +27,18 @@
               <Icon type="ios-people"></Icon>
               <span>顾客列表</span>
             </MenuItem>
-            <MenuItem name="datalist" to="datalist" v-if="role !== '7'">
-              <Icon type="ios-stats" />
-              <span>数据报表</span>
-            </MenuItem>
+            <!--<MenuItem name="datalist" to="datalist" v-if="role !== '7'">-->
+            <!--<Icon type="ios-stats" />-->
+            <!--<span>数据报表</span>-->
+          <!--</MenuItem>-->
+            <Submenu name="dataIndex" v-if="role !== '7'">
+              <template slot="title">
+                <Icon type="ios-paper" />
+                活动数据指标
+              </template>
+              <MenuItem name="sq-activity" to="sq-activity">社区活动</MenuItem>
+              <MenuItem name="gel-activity" to="gel-activity">成交客户感恩礼活动</MenuItem>
+            </Submenu>
             <!--店长角色下：显示经纪人管理，其余角色（不包括经纪人）：展示用户管理-->
             <MenuItem name="usermanage" to="usermanage">
               <Icon type="ios-person-add"></Icon>
@@ -41,7 +49,7 @@
               <!--<Icon type="ios-grid" />-->
               <!--<span>销控表</span>-->
             <!--</MenuItem>-->
-            <Submenu name="content" v-if="role !== '7'">
+            <Submenu name="xkb" v-if="role !== '7'">
               <template slot="title">
                 <Icon type="ios-paper" />
                 销控表
@@ -240,7 +248,7 @@ export default {
     border-radius: 4px;
     overflow: hidden;
     .ivu-layout-header
-      background #2D8CF0;
+      background #FEA202;
       height 60px;
       line-height 60px;
     .ivu-layout
@@ -328,4 +336,7 @@ export default {
     text-align right;
     .star
       color:red;
+  .ivu-layout-sider {
+    overflow scroll;
+  }
 </style>

@@ -19,6 +19,8 @@ import DataMainTain from '@/components/role-admin/data-maintain'
 import News from '@/components/news'
 import AgentManager from '@/components/agent-manager'
 import MarketControl from '@/components/market-control'
+import IndexSqActivity from '@/components/role-admin/activity-data-index/shequ-activity'
+import IndexgelActivity from '@/components/role-admin/activity-data-index/ganenli-activity'
 
 Vue.use(Router)
 
@@ -182,6 +184,24 @@ export default new Router({
           path: 'marketcontrol',
           name: 'marketcontrol',
           component: MarketControl,
+          meta: {
+            requireToken: true
+          }
+        },
+        // 数据指标-社区活动
+        {
+          path: 'sq-activity',
+          name: 'sq-activity',
+          component: IndexSqActivity,
+          meta: {
+            requireToken: true
+          }
+        },
+        // 数据指标-感恩礼 IndexgelActivity
+        {
+          path: 'gel-activity',
+          name: 'gel-activity',
+          component: IndexgelActivity,
           meta: {
             requireToken: true
           }
