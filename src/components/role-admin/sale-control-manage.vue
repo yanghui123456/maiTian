@@ -4,12 +4,12 @@
     <div class="mb20">
       <Row>
         <Col span="18">
-          <span class="titleText">多项级联：</span>
+          <span class="titleText">区域选择：</span>
           <Cascader :data="moreJilian" v-model="moreVal" trigger="click" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
         </Col>
         <Col span="6">
           <Button type="info" @click="search">查询</Button>
-          <Button type="info">导出筛选结果</Button>
+          <Button type="info" v-show="false">导出筛选结果</Button>
         </Col>
       </Row>
     </div>
@@ -36,16 +36,40 @@ export default {
           fixed: 'left'
         },
         {
-          title: '区域店组',
-          key: 'label',
+          title: '片区',
+          key: 'hugeArea',
           align: 'center',
-          width: 300
+          width: 90
+        },
+        {
+          title: '大区',
+          key: 'largeArea',
+          align: 'center',
+          width: 100
+        },
+        {
+          title: '区域',
+          key: 'area',
+          align: 'center',
+          width: 100
+        },
+        {
+          title: '店组',
+          key: 'shopGroup',
+          align: 'center',
+          width: 100
+        },
+        {
+          title: '经纪人',
+          key: 'realName',
+          align: 'center',
+          width: 100
         },
         {
           title: '意向',
           key: 'yixiang',
           align: 'center',
-          width: 100
+          width: 70
         },
         {
           title: '待补盘',
@@ -57,13 +81,13 @@ export default {
           title: '待售',
           key: 'daishou',
           align: 'center',
-          width: 100
+          width: 70
         },
         {
           title: '待租',
           key: 'daizhu',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '互相熟悉',
@@ -75,7 +99,7 @@ export default {
           title: '铁客',
           key: 'tieke',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '互相认识',
@@ -106,7 +130,7 @@ export default {
   methods: {
     // 获取级联下拉
     getJiLian () {
-      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9')
+      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=A6275675D8254075913102978DF9E00A')
         .then(res => {
           if (res.status === 'success') {
             this.moreJilian = res.data

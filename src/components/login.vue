@@ -1,6 +1,7 @@
 <template>
   <div class="login">
     <div class="left">
+      <img src="../assets/logo.png" alt="logo图标" style="width=100%;height=100%" class="logo">
     </div>
     <div class="right">
       <div class="loginBox">
@@ -60,15 +61,13 @@ export default {
         .then(res => {
           this.loading = false
           this.text = '登录'
-          if (res.status === 'success') {
+          if (res.status === 'success' || 'reset') {
             // 缓存token 和 role 角色
             // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
-            /* 管理用户名密码：18500340567
-             区经用户名密码：13137381348
-             13811467522
-             店长用户名密码：15010167975
-             13810424573
-             经纪人 13801018705  13810197067 */
+            // 管理用户名密码： 15901569118
+            // 区经用户名密码： 13811467522 张宏
+            // 店长用户名密码： 13810424573 崔传宏
+            // 经纪人用户名密码： 13609072023 张海洋
             var data = res.data
             var role = res.data.user.roleId
             store.commit('setToken', data.token)
@@ -77,11 +76,14 @@ export default {
             localStorage.setItem('role', data.user.roleId)
             store.commit('setUserId', data.user.userId)
             localStorage.setItem('userId', data.user.userId)
+            if (res.status === 'reset') {
+              localStorage.setItem('reset', 1)
+            }
             localStorage.setItem('departmentId', data.user.departmentId)
             // 根据不同的角色跳转到不同的页面;
             if (role === 1) {
               // 管理员
-              this.$router.replace('/home/datalist')
+              this.$router.replace('/home/sq-activity')
             } else if (role === 5) {
               // 区域经理
               this.$router.replace('/home/news')
@@ -116,15 +118,15 @@ export default {
     height:100%;
     float left;
   .left
-    width:48%;
+    width:60%;
     display flex;
     align-items center;
-    justify-content center;
+    justify-content center ;
     .logo
-      width:40%;
-      margin-top:-104px;
+      width:50%;
+      margin-top:-20px;
   .right
-    width:52%;
+    width:40%;
     display flex;
     align-items center;
     justify-content center;
@@ -132,10 +134,10 @@ export default {
       width:400px;
       padding: 10px;
       background #FEA202;
-      margin-top:-80px;
+      margin-top:-20px;
       border-radius 2px;
       box-sizing border-box;
-      margin-left:26%;
+      margin-left:-35%;
       .box
         width:100%;
         padding:30px 10% 44px 10%;

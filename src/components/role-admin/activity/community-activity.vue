@@ -24,6 +24,7 @@
         <Col span="3">
         <!--管理员-编辑（当前时间小于报名期开始都可以进行编辑），-->
         <Button type="info" v-if="role === 1" @click="adminEdit(item.communityActityId, 'manager')" :disabled="Date.parse(item.enrollDateStart) < Date.parse(new Date())">编辑</Button>
+        <Button type="info" v-if="role === 1" @click="adminEdit(item.communityActityId, 'listSeeDetail')">详情</Button>
         <!--区域经理-->
         <Button type="info" v-if="role === 5" @click="adminEdit(item.communityActityId, 'area')">查看</Button>
         <!--店长-->
@@ -106,7 +107,7 @@
             ref="upload"
             :show-upload-list="false"
             :on-success="docUpSuccess"
-            :format="['doc']"
+            :format="['doc','docx','ppt','pptx','xls','xlsx','pdf','jpg','jpeg','png']"
             :max-size="1000000000"
             :on-format-error="handleFormatError"
             :on-exceeded-size="handleMaxSize"
@@ -228,7 +229,7 @@
                 <Icon type="ios-camera" size="20"></Icon>
               </div>
             </Upload>
-            <img :src= "imgHttp + modalData.img1" alt="图片" class="oneUploadImg" v-if="modalData.img1 !== ''">
+            <img :src= "imgHttp + modalData.img1" alt="图片" class="oneUploadImg" v-if="modalData.img1 !== ''" @click="showBIgImg(imgHttp + modalData.img1)">
             </Col>
           </Row>
           <Row>
@@ -267,7 +268,7 @@
                 <Icon type="ios-camera" size="20"></Icon>
               </div>
             </Upload>
-            <img :src="imgHttp + modalData.img2" alt="图片" class="oneUploadImg" v-if="modalData.img2 !== ''">
+            <img :src="imgHttp + modalData.img2" alt="图片" class="oneUploadImg" v-if="modalData.img2 !== ''" @click="showBIgImg(imgHttp + modalData.img2)">
             </Col>
           </Row>
           <Row>
@@ -306,7 +307,7 @@
                 <Icon type="ios-camera" size="20"></Icon>
               </div>
             </Upload>
-            <img :src="imgHttp + modalData.img3" alt="图片" class="oneUploadImg" v-if="modalData.img3 !== ''">
+            <img :src="imgHttp + modalData.img3" alt="图片" class="oneUploadImg" v-if="modalData.img3 !== ''" @click="showBIgImg(imgHttp + modalData.img3)">
             </Col>
           </Row>
           <Row>
@@ -339,7 +340,7 @@
                 <Icon type="ios-camera" size="20"></Icon>
               </div>
             </Upload>
-            <img :src="imgHttp + modalData.img4" alt="图片" class="oneUploadImg" v-if="modalData.img4 !== ''">
+            <img :src="imgHttp + modalData.img4" alt="图片" class="oneUploadImg" v-if="modalData.img4 !== ''" @click="showBIgImg(imgHttp + modalData.img4)">
             </Col>
           </Row>
           <Row>
@@ -411,7 +412,7 @@
             </div>
             <!--每一组可以上传你多张-->
             <div v-for="(items, index) in item.imgList" :key="index" class="oneUploadImg fl">
-              <img :src="items.src" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.length > 0">
+              <img :src="items.src" alt="图片" style="width:100%;height:100%;border-radius: 5px;" v-if="item.imgList.length > 0" @click="showBIgImg(items.src)">
               <img src="../../../assets/Shape.png" alt="删除按钮" class="deletedImg" @click="deletedImg(item,items.id)">
             </div>
             <!--<div class="oneUploadImg fl">-->
@@ -710,12 +711,29 @@
         </div>
       </div>
     </Modal>
+    <!--查看大图-详情-->
+    <Modal
+      v-model="bigImgModal"
+      class-name="modal"
+      width="900px"
+      @on-visible-change="checkbigImgModal">
+      <p slot="header" class="tc">查看大图</p>
+      <div class="modalCentenr">
+        <img :src="bigImgSrc" alt="" style="width:100%;">
+      </div>
+      <div slot="footer" class="tc">
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
 export default {
   data () {
     return {
+      // ===============大图弹窗
+      bigImgModal: false,
+      bigImgSrc: '', // 大图地址
+      // ===============大图弹窗结束
       single: false,
       imgHttp: '',
       upLoadUrl: '',
@@ -739,7 +757,7 @@ export default {
         },
         {
           title: '费用总数',
-          key: 'name',
+          key: 'totalCost',
           align: 'center',
           width: 100
         },
@@ -850,7 +868,7 @@ export default {
         },
         {
           title: '费用总数',
-          key: 'name',
+          key: 'totalCost',
           align: 'center',
           width: 100
         },
@@ -1603,6 +1621,15 @@ export default {
       this.signInTitle = title
       this.signInShowTwo = showTwo
     },
+    checkbigImgModal (status) {
+      if (!status) {
+        this.bigImgSrc = ''
+      }
+    },
+    showBIgImg (src) {
+      this.bigImgModal = true
+      this.bigImgSrc = src
+    },
     // 弹窗:当显示隐藏状态变化时
     checkModal (status) {
       // true=显示；false=隐藏
@@ -2185,6 +2212,7 @@ export default {
               this.$Message.success('活动总结上传成功')
               // 更新正在执行的社群活动
               this.getImplementActivit(this.manageImplementActivityUrl)
+              this.getHistoryActivitieTable(this.manageHistoryActivityUrl)
             } else {
               this.$Message.error(res.message)
             }
@@ -2449,6 +2477,26 @@ export default {
         // 最晚签收时间要大于最晚送达时间
         this.$Message.error('最晚签收时间要晚于最晚送达时间')
         return false
+      } else if (Date.parse(datas.enrollShenHeTime[0]) < Date.parse(datas.enrollTime[1])) {
+        // 最晚签收时间要大于最晚送达时间
+        this.$Message.error('报名审核起始时间要晚于报名结束时间')
+        return false
+      } else if (Date.parse(datas.trainTime[0]) < Date.parse(datas.enrollShenHeTime[1])) {
+        // 最晚签收时间要大于最晚送达时间
+        this.$Message.error('培训时间起始时间要晚于报名审核结束时间')
+        return false
+      } else if (Date.parse(datas.trainShenHeTime[0]) < datas.trainTime[1]) {
+        // 最晚签收时间要大于最晚送达时间
+        this.$Message.error('培训审核时间要晚于培训结束时间')
+        return false
+      } else if (Date.parse(datas.xuanChuanTime[0]) < datas.trainShenHeTime[1]) {
+        // 最晚签收时间要大于最晚送达时间
+        this.$Message.error('宣传起始时间要晚于培训审核结束时间')
+        return false
+      } else if (Date.parse(datas.implementTime[0]) < datas.xuanChuanTime[1]) {
+        // 最晚签收时间要大于最晚送达时间
+        this.$Message.error('执行起始时间要晚于宣传结束时间')
+        return false
       } else {
         if (datas.giftList.length === 0) {
           this.$Message.error('请添加至少一项礼品介绍')
@@ -2549,7 +2597,7 @@ export default {
           } else {
             // 判断最晚送达和最晚签收时间 是否change过没有change过走时间格式化，change过就不用走
             if (this.changeserviceTime === false) {
-              var time1 = activity.lastReceiveTime
+              var time1 = new Date(activity.lastReceiveTime)
               var time2Y = time1.getFullYear()
               var time2M = time1.getMonth() + 1
               var time2H = time1.getDate()

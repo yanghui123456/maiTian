@@ -5,8 +5,7 @@
       <Header>
         <Menu mode="horizontal" theme="primary" active-name="1">
           <div class="layout-logo">
-            <!--<img src="../../assets/logo.png" alt="logo图标" class="logo">-->
-            <span class="title"> <span class="fb">麦田房产</span></span>
+             <img src="../assets/logo.png" alt="logo图标" style="width=100%;height=100%" class="logo">
           </div>
           <div class="layout-nav">
             <span class="editPass" @click="editPass">修改密码</span>
@@ -40,10 +39,10 @@
               <MenuItem name="gel-activity" to="gel-activity">成交客户感恩礼活动</MenuItem>
             </Submenu>
             <!--店长角色下：显示经纪人管理，其余角色（不包括经纪人）：展示用户管理-->
-            <MenuItem name="usermanage" to="usermanage">
+            <MenuItem name="usermanage" to="usermanage" v-if="role !== '7'&&role !== '5'&&role !== '6'">
               <Icon type="ios-person-add"></Icon>
-              <span v-if="role === '1' || role === '5'">用户管理</span>
-              <span v-if="role === '6'">经纪人管理</span>
+              <span v-if="role === '1'">用户管理</span>
+              <!-- <span v-if="role === '6'">经纪人管理</span> -->
             </MenuItem>
             <!--<MenuItem name="marketcontrol" to="marketcontrol"  v-if="role === '5' || role === '6'">-->
               <!--<Icon type="ios-grid" />-->
@@ -65,7 +64,7 @@
                 内容库管理
               </template>
               <MenuItem name="SysTrigger" to="SysTrigger">系统触发</MenuItem>
-              <MenuItem name="restivalseason" to="restivalseason">节日节气</MenuItem>
+              <!--<MenuItem name="restivalseason" to="restivalseason">节日节气</MenuItem>-->
               <MenuItem name="realtimepublish" to="realtimepublish">实时发布</MenuItem>
             </Submenu>
             <Submenu name="activity" v-if="role === '1' || role === '5' || role === '6'">
@@ -73,7 +72,7 @@
                 <Icon type="ios-chatbubbles" />
                 社区活动管理
               </template>
-              <MenuItem name="communityactivity" to="communityactivity" v-if="role === '1' || role === '5' || role === '6'">社群活动</MenuItem>
+              <MenuItem name="communityactivity" to="communityactivity" v-if="role === '1' || role === '5' || role === '6'">社区活动</MenuItem>
               <MenuItem name="customergiving" to="customergiving" v-if="role === '1' || role === '6'">客户感恩礼</MenuItem>
             </Submenu>
             <!--<MenuItem name="datamaintain" to="datamaintain" v-if="role === '1'">-->
@@ -97,7 +96,6 @@
       <!--弹层-->
       <Modal
         v-model="modal"
-        class-name="modal"
         width="500px"
         @on-visible-change="checkModal"
         >
@@ -106,9 +104,9 @@
           <Row class="mb20" type="flex" justify="center" >
             <Col span="24">
             <span class="lableName"><span class="star">*</span>新密码：</span>
-            <Input placeholder="请输入密码" style="width: 70%" clearable type="password" v-model="modalData.pass"/>
+            <Input placeholder="请输入新密码(至少6位)" style="width: 70%" clearable type="password" v-model="modalData.pass"/>
             </Col>
-          </Row>
+         </Row>
           <Row class="mb20" type="flex" justify="center">
             <Col span="24">
             <span class="lableName"><span class="star">*</span>确认新密码：</span>
@@ -132,14 +130,19 @@ export default {
     return {
       modal: false,
       modalData: {
-        pass: '', // 互动内容
-        ensurePass: '' // 发布时间
+        pass: '', // 新密码
+        ensurePass: '' // 确认新密码
       },
       activeMenu: '',
       role: '' // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
     }
   },
   created: function () {
+    var reset2 = localStorage.getItem('reset')
+    if (reset2 === '1') {
+      this.modal = true
+      this.checkModal(true)
+    }
   },
   mounted () {
     this.$nextTick(() => {
@@ -206,6 +209,9 @@ export default {
       if (pass1 === '') {
         this.$Message.warning('请输入新密码')
         return false
+      } else if (!/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$/.test(pass1)) {
+        this.$Message.warning('密码必须是6位或以上字母和数字组合')
+        return false
       } else if (pass2 === '') {
         this.$Message.warning('请确认新密码')
         return false
@@ -262,9 +268,9 @@ export default {
       top: 0;
       left: -26px;
       .logo
-        width:40px;
-        height:40px;
-        margin:10px 10px 0 0;
+        width:143px;
+        height:55px;
+        margin:5px 10px 0 0;
       .title
         display inline-block;
         height:100%;
@@ -339,4 +345,5 @@ export default {
   .ivu-layout-sider {
     overflow scroll;
   }
+
 </style>

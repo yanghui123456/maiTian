@@ -110,7 +110,7 @@
   background-color: #FEA202;
   border-color: #FEA202;
 }
-.ivu-page-item-active,.ivu-upload .ivu-upload-select:hover,.ivu-input:hover,.ivu-input:focus,.ivu-select-single .ivu-select-selection {
+.ivu-page-item-active,.ivu-upload .ivu-upload-select:hover,.ivu-input:hover,.ivu-input:focus,.ivu-select-single,.ivu-select-placeholder{
   border-color: #FEA202;
 }
 .ivu-menu-item span:hover,.ivu-menu-item:hover i,.ivu-menu-vertical .ivu-menu-submenu-title:hover,.ivu-btn-text:hover,.ivu-page-item-active a, .ivu-page-item-active:hover a,.ivu-menu-light.ivu-menu-vertical .ivu-menu-item-active:not(.ivu-menu-submenu),.ivu-cascader-menu .ivu-cascader-menu-item-active,.ivu-select-item-selected, .ivu-select-item-selected:hover,.ivu-menu-vertical .ivu-menu-submenu .ivu-menu-item:hover{
@@ -125,4 +125,8 @@
 }
 .ivu-menu-item span:hover,.ivu-menu-item:hover i,.ivu-menu-item:hover span{
   color:#FEA202;
+}
+.ivu-select-selection:hover,.ivu-select-selection-focused{
+  border-color:#FEA202;
+  box-shadow: 0 0 0 2px #FEA202;
 }

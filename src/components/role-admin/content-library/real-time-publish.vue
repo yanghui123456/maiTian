@@ -32,24 +32,18 @@
           <Col span="24">
           <span class="title">提醒时间：</span>
           <DatePicker :editable="false" format="yyyy-MM-dd HH:mm"  v-model="modalData.remindTime" @on-change="warnChange" type="datetime" placeholder="请选择提醒时间" style="width: 200px"></DatePicker>
+         </Col>
+        </Row>
+         <Row>
+          <Col span="24">
+          <span class="titlet">最佳提醒时间为上午10:30-11:30</span>
+          <span class="titlet">请注意避开: 8:30--9:30、13:30--15:00、17:30--19:00、21:00--22:00高峰期</span>
           </Col>
         </Row>
         <Row>
           <Col span="24">
           <span class="title">提醒消息内容：</span>
           <Input placeholder="请输入提醒内容模板" style="width:80%" :disabled="disabled" v-model="modalData.remindContent" type="textarea" :rows="4"/>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="24">
-          <span class="title">提醒时间：</span>
-          <span>最佳提醒时间为上午10:30-11:30</span>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="24">
-          <span class="title">温馨提示：</span>
-          <span>提醒时间请注意避开: 8:30--9:30、13:30--15:00、17:30--19:00、21:00--22:00这4个高峰期</span>
           </Col>
         </Row>
         <!--上传图片-->
@@ -70,7 +64,8 @@
               <Icon type="ios-camera" size="20"></Icon>
             </div>
           </Upload>
-          <img :src="modalData.uploadImg" alt="图片" style="width:60px;height:60px;border-radius: 5px;" v-if="modalData.uploadImg !== ''">
+          <img :src="modalData.uploadImg" alt="图片" style="width:60px;height:60px;border-radius: 5px;vertical-align:middle;cursor: pointer;" v-if="modalData.titlePic !== ''"  @click="showBIgImg(modalData.uploadImg)">
+          <Button type="error" @click="deletedImg" v-if="modalData.titlePic !== ''">删除图片</Button>
           </Col>
         </Row>
         <Row>
@@ -89,6 +84,19 @@
       <div slot="footer" class="tc">
         <Button type="info" @click="save">保存</Button>
         <Button type="info" @click="cancel">取消</Button>
+      </div>
+    </Modal>
+    <!--查看大图-详情-->
+    <Modal
+      v-model="bigImgModal"
+      class-name="modal"
+      width="900px"
+      @on-visible-change="checkbigImgModal">
+      <p slot="header" class="tc">查看大图</p>
+      <div class="modalCentenr">
+        <img :src="bigImgSrc" alt="" style="width:100%;">
+      </div>
+      <div slot="footer" class="tc">
       </div>
     </Modal>
     <!--删除提示-->
@@ -130,11 +138,16 @@ export default {
           align: 'center',
           width: 100,
           render: (h, params) => {
-            return h('img', {
-              attrs: {
-                src: window.serverIp + params.row.titlePic, style: 'width: 50px;height:50px;margin-top:6px;border-radius: 2px;'
-              }
-            })
+            if (params.row.titlePic !== '') {
+              return h('img', {
+                attrs: {
+                  src: window.serverIp + params.row.titlePic, style: 'width: 50px;height:50px;margin-top:6px;border-radius: 2px;'
+                }
+              })
+            } else {
+              return h('span', {
+              }, '未上传图片')
+            }
           }
         },
         {
@@ -243,7 +256,10 @@ export default {
       editId: '', // 编辑的id
       // ===删除弹层
       deletModal: false,
-      deletId: '' // 删除id
+      deletId: '', // 删除id
+      // ===查看大图
+      bigImgModal: false,
+      bigImgSrc: ''
     }
   },
   created () {
@@ -277,6 +293,11 @@ export default {
           titlePic: '', // 上传的图片 只上传一张
           uploadImg: '' // 传给后台的
         }
+      }
+    },
+    checkbigImgModal (status) {
+      if (!status) {
+        this.bigImgSrc = ''
       }
     },
     // 获取表格
@@ -366,8 +387,6 @@ export default {
         this.$Message.warning('请选择提醒时间')
       } else if (data.remindContent === '') {
         this.$Message.warning('请输入提醒消息内容')
-      } else if (data.titlePic === '') {
-        this.$Message.warning('请选择图片')
       } else if (data.copyRighter === '') {
         this.$Message.warning('请输入互动文案')
       } else if (data.forwarding === '') {
@@ -531,6 +550,16 @@ export default {
       console.log(file)
       console.log(fileList)
       this.$Message.error('文件超出指定大小')
+    },
+    // 删除图片功能
+    deletedImg () {
+      this.modalData.uploadImg = ''
+      this.modalData.titlePic = ''
+    },
+    // 查看大图
+    showBIgImg (src) {
+      this.bigImgModal = true
+      this.bigImgSrc = src
     }
   },
   // 计算属性
@@ -572,5 +601,20 @@ export default {
   }
   textarea.ivu-input {
     font-size:12px;
+  }
+  .titlet{
+    display:inline-block;
+    width:100%
+    height:10px;
+    line-height: 10px;
+    text-align: left;
+    margin-left:120px;
+  }
+  .deletedImg{
+    width:20px;
+    height:20px;
+    position absolute;
+    top:0;
+    right:0;
   }
 </style>

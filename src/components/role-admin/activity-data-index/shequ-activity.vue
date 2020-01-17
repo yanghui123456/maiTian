@@ -4,20 +4,20 @@
     <div class="mb20">
       <Row>
         <Col span="24">
-        <span class="titleText">多项级联：</span>
-        <Cascader :data="moreJilian" v-model="moreVal" trigger="click" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
+        <span class="titleText">区域选择：</span>
+        <Cascader :data="moreJilian" v-model="moreVal" trigger="click" style="width:60%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
         </Col>
       </Row>
       <Row class="mt10">
         <Col span="10">
         <span class="titleText">社区活动：</span>
-        <Select v-model="sqActivity" @on-change="activityChange" :placement="posit" placeholder="请选择社区活动">
+        <Select v-model="sqActivity" @on-change="activityChange" :placement="posit" placeholder="请选择社区活动" style="width:80%;display: inline-block;">
           <Option v-for="item in activityList" :value="item.communityActityId" :key="item.communityActityId">{{ item.communityName }}</Option>
         </Select>
         </Col>
         <Col span="6">
         <Button type="info" @click="search">查询</Button>
-        <Button type="info">导出筛选结果</Button>
+        <Button type="info" v-show="false">导出筛选结果</Button>
         </Col>
       </Row>
     </div>
@@ -47,19 +47,19 @@ export default {
           title: '片区',
           key: 'area',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '大区',
           key: 'region',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '区域',
           key: 'domain',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '店组',
@@ -71,7 +71,7 @@ export default {
           title: '经纪人',
           key: 'agent',
           align: 'center',
-          width: 100
+          width: 75
         },
         {
           title: '新增手机号',
@@ -137,7 +137,7 @@ export default {
   methods: {
     // 获取级联下拉
     getJiLian () {
-      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9')
+      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=A6275675D8254075913102978DF9E00A')
         .then(res => {
           if (res.status === 'success') {
             this.moreJilian = res.data

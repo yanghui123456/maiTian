@@ -80,7 +80,7 @@ export default {
               for (var i = 0; i < res.data.length; i++) {
                 arr.push(res.data[i].id)
               }
-              this.noReadStr = arr
+              this.noReadStr = arr.join(',')
             }
           } else {
             this.$Message.error(res.message)

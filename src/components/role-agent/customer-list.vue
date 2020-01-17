@@ -17,7 +17,7 @@
         </Upload>
       </div>
       <!--<Button type="info" @click="add">单个添加</Button>-->
-      <Button type="info" @click="downLoadUserInfo">导出潜在客户信息</Button>
+      <!-- <Button type="info" @click="downLoadUserInfo">导出潜在客户信息</Button> -->
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
@@ -267,32 +267,32 @@ export default {
           key: 'wantRent',
           align: 'center',
           width: 120
-        },
-        {
-          title: '操作',
-          key: 'customId',
-          align: 'center',
-          width: 80,
-          fixed: 'right',
-          render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.seeDetail(params.row)
-                  }
-                }
-              }, '查看')
-            ])
-          }
         }
+        // {
+        //   title: '操作',
+        //   key: 'customId',
+        //   align: 'center',
+        //   width: 80,
+        //   fixed: 'right',
+        //   render: (h, params) => {
+        //     return h('div', [
+        //       h('Button', {
+        //         props: {
+        //           type: 'primary',
+        //           size: 'small'
+        //         },
+        //         style: {
+        //           marginRight: '5px'
+        //         },
+        //         on: {
+        //           click: () => {
+        //             this.seeDetail(params.row)
+        //           }
+        //         }
+        //       }, '查看')
+        //     ])
+        //   }
+        // }
       ],
       dataList: [],
       modalData: {

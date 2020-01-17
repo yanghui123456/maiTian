@@ -122,14 +122,17 @@
             <Col span="16">
             <Row>
               <Col span="24" class="pl15">
+              礼品名称:
               <Input placeholder="请输入礼品名称" style="width: auto" :disabled="disabled" v-model="item.name"/>
               </Col>
               <Col span="24" class="mt10 mb10 pl15">
+              礼品描述:
               <Input placeholder="请输入礼品描述" style="width: auto" :disabled="disabled" v-model="item.describe"/>
               </Col>
-              <Col span="24">
-              <span class="cRed">￥</span>
+              <Col span="24" class="pl15">
+              礼品价格:
               <Input placeholder="请输入礼品价格" style="width: auto" :disabled="disabled" v-model="item.price" type="number"/>
+              元
               </Col>
             </Row>
             </Col>

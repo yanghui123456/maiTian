@@ -5,7 +5,7 @@
     <div class="searchCondition">
       <Row>
         <Col span="10">
-          <span class="titleText">多项级联：</span>
+          <span class="titleText">区域选择：</span>
           <Cascader :data="moreJilian" v-model="moreVal" trigger="click" style="width:80%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
         </Col>
         <Col span="10">
@@ -238,7 +238,7 @@ export default {
   methods: {
     // 获取级联下拉
     getJiLian () {
-      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9')
+      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=A6275675D8254075913102978DF9E00A')
         .then(res => {
           if (res.status === 'success') {
             this.moreJilian = res.data

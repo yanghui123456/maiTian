@@ -8,7 +8,7 @@
         <!--<Select v-model="cellName"  style="width: auto" @on-change="cellNameChange" :placement="posit" placeholder="请输入小区" filterable>-->
           <!--<Option v-for="item in cellNameList" :value="item" :key="item">{{ item }}</Option>-->
         <!--</Select>-->
-        <Input placeholder="请输入活动名称" style="width:auto" v-model="nameSs" @on-blur="xiaoquBlur"/>
+        <Input placeholder="请输入小区名称" style="width:auto" v-model="nameSs" @on-blur="xiaoquBlur"/>
         </Col>
         <Col span="5">
         <span class="titleText">楼号：</span>
@@ -18,7 +18,7 @@
         </Col>
         <Col span="6">
           <Button type="info" @click="search">查询</Button>
-          <Button type="info">导出筛选结果</Button>
+          <Button type="info" v-show="false">导出筛选结果</Button>
         </Col>
       </Row>
     </div>
@@ -48,16 +48,28 @@ export default {
           fixed: 'left'
         },
         {
-          title: '区域店组',
-          key: 'label',
+          title: '小区名',
+          key: 'regionName',
           align: 'center',
-          width: 300
+          width: 120
+        },
+        {
+          title: '小区分期',
+          key: 'period',
+          align: 'center',
+          width: 120
+        },
+        {
+          title: '楼号',
+          key: 'buildingNuber',
+          align: 'center',
+          width: 70
         },
         {
           title: '意向',
           key: 'yixiang',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '待补盘',
@@ -69,13 +81,13 @@ export default {
           title: '待售',
           key: 'daishou',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '待租',
           key: 'daizhu',
           align: 'center',
-          width: 100
+          width: 70
         },
         {
           title: '互相熟悉',
@@ -87,7 +99,7 @@ export default {
           title: '铁客',
           key: 'tieke',
           align: 'center',
-          width: 100
+          width: 80
         },
         {
           title: '互相认识',
@@ -170,7 +182,7 @@ export default {
     },
     // 获取列表departmentId: 最后选择的节点的id;departmentPrefix:片区/大区/区域 文字的
     getList (name, pageNum, pageSize) {
-      this.$axios.get(window.serverIp + '/api/house/getHouseTongjiByRegion?region_name=' + name + '&pageNum=' + pageNum + '&pageSize=' + pageSize)
+      this.$axios.get(window.serverIp + '/api/house/getHouseTongjiByRegion?region_name=' + name + '&buiding_number=' + this.cellNumber + '&pageNum=' + pageNum + '&pageSize=' + pageSize)
         .then(res => {
           if (res.status === 'success') {
             console.log(res.data)

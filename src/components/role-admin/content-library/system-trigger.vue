@@ -28,6 +28,24 @@
             </Col>
           </Row>
           <Row>
+            <Col span="24">
+            <span class="title">提醒文案：</span>
+            <Input placeholder="请输入提醒文案" :disabled="disabled" style="width: 80%;" v-model="modalData.wenan1"/>
+            </Col>
+          </Row>
+          <Row>
+            <Col span="24">
+            <span class="title"></span>
+            <Input placeholder="请输入提醒文案" :disabled="disabled" style="width: 80%;" v-model="modalData.wenan2"/>
+            </Col>
+          </Row>
+          <Row>
+            <Col span="24">
+            <span class="title"></span>
+            <Input placeholder="请输入提醒文案" :disabled="disabled" style="width: 80%;" v-model="modalData.wenan3"/>
+            </Col>
+          </Row>
+          <Row>
             <Col span="12">
             <span class="title">版式名称：</span>
             <Input placeholder="请输入互动内容" style="width: auto" v-model="modalData.format"/>
@@ -217,6 +235,9 @@ export default {
         currentTime: '', // 提醒时间
         threeAgoTime: '', // 提醒时间
         sevenAgoTime: '', // 提醒时间
+        wenan1: '', // 文案1
+        wenan2: '', // 文案2
+        wenan3: '', // 文案3
         format: '', // 版式名称  是
         theme: '', // 文案主题 是
         poster: '', // 海报 是
@@ -256,6 +277,9 @@ export default {
           currentTime: '', // 提醒时间
           threeAgoTime: '', // 提醒时间
           sevenAgoTime: '', // 提醒时间
+          wenan1: '', // 文案1
+          wenan2: '', // 文案2
+          wenan3: '', // 文案3
           format: '', // 版式名称  是
           theme: '', // 文案主题 是
           poster: '', // 海报 是
@@ -298,6 +322,9 @@ export default {
             this.modalData.currentTime = res.data.currentTime
             this.modalData.threeAgoTime = res.data.threeAgoTime
             this.modalData.sevenAgoTime = res.data.sevenAgoTime
+            this.modalData.wenan1 = res.data.remindCurrent
+            this.modalData.wenan2 = res.data.remindThreeAgo
+            this.modalData.wenan3 = res.data.remindSevenAgo
           } else {
             this.$Message.error(res.message)
           }

@@ -3,6 +3,15 @@
   <div class="container">
     <div class="mb20">
       <Button type="info" @click="add" style="display: none;">添加用户</Button>
+      <Row>
+        <Col span="18">
+        <span class="titleText">区域选择：</span>
+        <Cascader :data="searchmoreJilian" v-model="searchmoreVal" trigger="click" style="width:60%;display: inline-block;" change-on-select @on-change="cascaderChange"></Cascader>
+        </Col>
+        <Col span="6">
+        <Button type="info" @click="searchList">查询</Button>
+        </Col>
+      </Row>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
     <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
@@ -56,7 +65,7 @@
         </Row>
         <Row class="mt10">
           <Col span="24">
-          <span class="title">多项级联：</span>
+          <span class="title">区域选择：</span>
           <Cascader :disabled="disabled" :data="moreJilian" v-model="modalData.moreVal" trigger="hover" style="width:80%;display: inline-block;" change-on-select></Cascader>
           </Col>
         </Row>
@@ -72,11 +81,14 @@
 export default {
   data () {
     return {
+      searchmoreVal: [], // id数组
+      searchmoreJilian: [], // 多项级联
+      selectDepartMentId: '', // 已选择的id
       // 列表
       loading: true, // 表格加载
       total: 0,
       pageNum: 1, // 第几页
-      pageSize: 10,
+      pageSize: 50,
       dataCol: [
         {
           title: '序号',
@@ -87,14 +99,32 @@ export default {
           }
         },
         {
+          title: '大区',
+          key: 'middleArea',
+          align: 'center',
+          width: 140
+        },
+        {
+          title: '区域',
+          key: 'smallArea',
+          align: 'center',
+          width: 140
+        },
+        {
+          title: '店组',
+          key: 'shopGroup',
+          align: 'center',
+          width: 140
+        },
+        {
           title: '成员姓名',
           key: 'realName',
           align: 'center',
           width: 200
         },
         {
-          title: '身份证号',
-          key: 'idCard',
+          title: '入职时间',
+          key: 'entryDate',
           align: 'center',
           width: 200
         },
@@ -104,12 +134,7 @@ export default {
           align: 'center',
           width: 150
         },
-        {
-          title: '入职日期',
-          key: 'entryDate',
-          align: 'center',
-          width: 140
-        },
+
         // 1:管理员；2：城市总经理；3：片区总经理；4：大区总监；5：区域经理；6：店长；7：经纪人
         {
           title: '成员身份',
@@ -136,32 +161,32 @@ export default {
               }
             }, crud)
           }
-        },
-        {
-          title: '操作',
-          key: 'userId',
-          align: 'center',
-          width: 200,
-          fixed: 'right',
-          render: (h, params) => {
-            return h('div', [
-              h('Button', {
-                props: {
-                  type: 'primary',
-                  size: 'small'
-                },
-                style: {
-                  marginRight: '5px'
-                },
-                on: {
-                  click: () => {
-                    this.edit(params.row)
-                  }
-                }
-              }, '查看')
-            ])
-          }
         }
+        // {
+        //   title: '操作',
+        //   key: 'userId',
+        //   align: 'center',
+        //   width: 200,
+        //   fixed: 'right',
+        //   render: (h, params) => {
+        //     return h('div', [
+        //       h('Button', {
+        //         props: {
+        //           type: 'primary',
+        //           size: 'small'
+        //         },
+        //         style: {
+        //           marginRight: '5px'
+        //         },
+        //         on: {
+        //           click: () => {
+        //             this.edit(params.row)
+        //           }
+        //         }
+        //       }, '查看')
+        //     ])
+        //   }
+        // }
       ],
       dataList: [],
       editUserId: '', // 编辑用户的id
@@ -186,12 +211,37 @@ export default {
     }
   },
   created () {
-    this.getUserList(1, this.pageSize)
+    this.getJiLian()
+    this.getUserList(1, this.pageSize, '')
   },
   methods: {
+    // 获取级联下拉
+    getJiLian () {
+      this.$axios.get(window.serverIp + '/api/department/getDepartmentTree?pid=A6275675D8254075913102978DF9E00A')
+        .then(res => {
+          if (res.status === 'success') {
+            this.searchmoreJilian = res.data
+          } else {
+            this.$Message.error(res.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 级联变化
+    cascaderChange (val, data) {
+      this.searchmoreVal = val
+      console.log(val)
+      console.log(data)
+      this.selectDepartMentId = data[data.length - 1].value
+    },
+    searchList () {
+      this.getUserList(this.pageNum, this.pageSize, this.selectDepartMentId)
+    },
     // 获取用户列表
-    getUserList (pageNum, pgeSize) {
-      this.$axios.get(window.serverIp + '/api/user/getUsersMoreList?pageNum=' + pageNum + '&pageSize=' + pgeSize)
+    getUserList (pageNum, pgeSize, id) {
+      this.$axios.get(window.serverIp + '/api/user/getUsersMoreList?pageNum=' + pageNum + '&pageSize=' + pgeSize + '&department_id=' + id)
         .then(res => {
           if (res.status === 'success') {
             this.dataList = res.data.records
@@ -209,7 +259,7 @@ export default {
     pageChange (val) {
       this.loading = true
       this.pageNum = val
-      this.getUserList(val, this.pageSize)
+      this.getUserList(val, this.pageSize, this.selectDepartMentId)
     },
     // 成员身份改变
     roleChange (val) {
@@ -311,7 +361,7 @@ export default {
             if (res.status === 'success') {
               this.$Message.success('修改用户成功')
               this.modalStatus(false, '', false)
-              this.getUserList(this.pageNum, this.pageSize)
+              this.getUserList(this.pageNum, this.pageSize, this.selectDepartMentId)
             } else {
               this.$Message.error(res.message)
             }
@@ -338,7 +388,7 @@ export default {
       // 获取成员身份
       this.getRoleAndJilian('role', '/maitian/role', 'add', '')
       // 获取多项级联
-      this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9', 'add', '')
+      this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=A6275675D8254075913102978DF9E00A', 'add', '')
     },
     // 获取级联和角色列表
     getRoleAndJilian (type, url, status, params) {
@@ -395,7 +445,7 @@ export default {
           if (res.status === 'success') {
             this.modalStatus(true, '用户详情', true)
             this.getRoleAndJilian('role', '/maitian/role', 'edit', res.data)
-            this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=d770504cd7f911e79bcb005056b710e9', 'edit', res.data)
+            this.getRoleAndJilian('jiLian', '/api/department/getDepartmentTree?pid=A6275675D8254075913102978DF9E00A', 'edit', res.data)
           } else {
             this.$Message.error(res.message)
           }
