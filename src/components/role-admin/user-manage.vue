@@ -14,7 +14,7 @@
       </Row>
     </div>
     <Table :columns="dataCol" :loading="loading" :data="dataList" border height="480" size="small"></Table>
-    <Page :total="total" :current="pageNum" show-total @on-change="pageChange" class="mt20 tc"/>
+    <Page :total="total" :current="pageNum" show-total :page-size="50" @on-change="pageChange" class="mt20 tc"/>
     <!--弹层-->
     <Modal
       v-model="modal"
